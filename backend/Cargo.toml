@@ -16,3 +16,9 @@ futures = "0.3"
 actix-web-actors = "*"
 rand =  "*"
 colored = "*"
+
+futures-util = "0.3"
+sanitize-filename = "0.2"
+uuid = { version = "0.8", features = ["v4"] }
+actix-files = "*"
+actix-multipart = "0.3"

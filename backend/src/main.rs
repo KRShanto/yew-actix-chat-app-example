@@ -9,10 +9,11 @@ mod actors;
 mod route_functions;
 
 use actors::ChatServer;
-use route_functions::ws_index;
+use route_functions::{save_file, ws_index};
 
 #[actix_web::main]
 async fn main() {
+    std::fs::create_dir_all("./img").unwrap();
     std::env::set_var("RUST_LOG", "actix_server=info,actix_web=info");
     env_logger::init();
 
@@ -32,6 +33,7 @@ async fn main() {
             )
             .wrap(middleware::Logger::default())
             .service(web::resource("/ws/").route(web::get().to(ws_index)))
+            .service(web::resource("/upload-image/").route(web::post().to(save_file)))
     })
     .bind("127.0.0.1:8000")
     .unwrap()
