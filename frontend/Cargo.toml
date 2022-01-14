@@ -21,3 +21,4 @@ tokio = "*"
 rand = "*"
 getrandom = {version = "0.2.3", features = ["js"]}
 uuid = { version = "0.8", features = [  "v1", "v4", "wasm-bindgen"] }
+gloo-storage = "*"

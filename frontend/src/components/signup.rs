@@ -1,4 +1,6 @@
 #![allow(dead_code, unused)]
+use gloo_storage::LocalStorage;
+use gloo_storage::Storage;
 use reqwasm::http::FormData;
 use reqwasm::http::Request;
 use serde::{Deserialize, Serialize};
@@ -67,7 +69,13 @@ pub fn signup() -> Html {
                                 .await
                                 .unwrap();
 
-                        console_log!(format!("{:?}", resp));
+
+                        if resp.status() == 200 {
+                            // Saving user's info in localstorage;
+                            // TODO: Later on I will store these info in cookies. For now, I am storing them in localstorage
+                            LocalStorage::set("user_info", user_info).unwrap();
+                            console_log!("Your account has been created successfully and you are logged in automatically");
+                        }
                     });
 
                 }}>{"Create account"}</button>
