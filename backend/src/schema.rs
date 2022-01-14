@@ -26,6 +26,7 @@ table! {
 table! {
     users (id) {
         id -> Int4,
+        nickname -> Varchar,
         username -> Varchar,
         password -> Varchar,
     }
