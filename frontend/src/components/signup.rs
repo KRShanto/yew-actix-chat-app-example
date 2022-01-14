@@ -16,7 +16,7 @@ pub struct UserInfo {
     username: String,
     password: String,
     nickname: String,
-    // TODO: Later I will add `img_url` frield
+    img_url: String,
 }
 
 #[function_component(Signup)]
@@ -46,8 +46,8 @@ pub fn signup() -> Html {
                     let nickname = nickname_ref.cast::<HtmlInputElement>().unwrap().value();
                     let username = username_ref.cast::<HtmlInputElement>().unwrap().value();
                     let password = password_ref.cast::<HtmlInputElement>().unwrap().value();
-                    // let img = img_ref.cast::<HtmlInputElement>().unwrap().files().unwrap();
-                    // let img_url =  Uuid::new_v4().to_string() + "----" +   &img.get(0).unwrap().name();
+                    let img = img_ref.cast::<HtmlInputElement>().unwrap().files().unwrap();
+                    let img_url =  Uuid::new_v4().to_string() + "----" +   &img.get(0).unwrap().name();
 
 
                     spawn_local(async move {
@@ -55,6 +55,7 @@ pub fn signup() -> Html {
                             username,
                             password,
                             nickname,
+                            img_url
                         };
 
                         let user_info_json = serde_json::to_string(&user_info).unwrap();

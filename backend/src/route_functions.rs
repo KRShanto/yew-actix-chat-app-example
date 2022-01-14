@@ -15,12 +15,13 @@ use crate::{
     db::{create_user, establish_connection},
 };
 
-// ***** User's info from json body; ***** //
+// *************** User's info from json body; ***************** //
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserInfo {
     username: String,
     password: String,
     nickname: String,
+    img_url: String,
 }
 
 // ************************************************************************* //
@@ -80,6 +81,7 @@ pub async fn signup(request: HttpRequest, user_info: web::Json<UserInfo>) -> imp
         user_info.username.clone(),
         user_info.password.clone(),
         user_info.nickname.clone(),
+        user_info.img_url.clone(),
     );
 
     if let Err(e) = result {

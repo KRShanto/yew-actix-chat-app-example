@@ -9,11 +9,13 @@ pub fn create_user(
     username: String,
     password: String,
     nickname: String,
+    img_url: String,
 ) -> Result<(), Option<String>> {
     let new_user = NewUser {
         username,
         password,
         nickname,
+        img_url,
     };
 
     let result = diesel::insert_into(users::table)
