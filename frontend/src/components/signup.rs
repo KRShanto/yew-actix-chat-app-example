@@ -1,24 +1,12 @@
+use reqwasm::http::FormData;
 use reqwasm::http::Request;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::spawn_local;
-use web_sys::File;
 use web_sys::HtmlInputElement;
 use weblog::console_log;
 use yew::prelude::*;
-
-// Bringing `FormData` object from javascript so that we can send any file to the server.
-#[wasm_bindgen]
-extern "C" {
-    type FormData;
-
-    #[wasm_bindgen(constructor)]
-    fn new() -> FormData;
-
-    #[wasm_bindgen(method)]
-    fn append(this: &FormData, name: &str, value: File, filename: String);
-
-}
 
 #[function_component(Signup)]
 pub fn signup() -> Html {
@@ -50,13 +38,14 @@ pub fn signup() -> Html {
                     let img = img_ref.cast::<HtmlInputElement>().unwrap().files().unwrap();
                     let img_url =  Uuid::new_v4().to_string() + "----" +   &img.get(0).unwrap().name();
 
-                    console_log!("Nickname: ", nickname);
-                    console_log!("Username: ", username);
-                    console_log!("Password: ", password);
+                    console_log!("Nickname: ", nickname.clone());
+                    console_log!("Username: ", username.clone());
+                    console_log!("Password: ", password.clone());
                     console_log!("Image url: ", img_url.clone());
 
-                    let form_data = FormData::new();
-                    form_data.append("imgForm", img.get(0).unwrap(), img_url);
+
+                    let form_data = FormData::new().unwrap();
+                    form_data.append_with_blob_and_filename("imgage", &img.get(0).unwrap(), &img_url).unwrap();
 
                     spawn_local(async move {
 
