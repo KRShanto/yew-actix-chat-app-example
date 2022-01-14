@@ -5,11 +5,10 @@ use actix_cors::Cors;
 use actix_web::{middleware, web};
 use actix_web::{App, HttpServer};
 
-mod actors;
-mod route_functions;
-
-use actors::ChatServer;
-use route_functions::{save_file, ws_index};
+use backend::{
+    actors::ChatServer,
+    route_functions::{save_file, ws_index},
+};
 
 #[actix_web::main]
 async fn main() {
