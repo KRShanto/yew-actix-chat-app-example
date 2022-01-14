@@ -7,6 +7,7 @@ use web_sys::HtmlInputElement;
 use weblog::console_log;
 use yew::prelude::*;
 
+// Bringing `FormData` object from javascript so that we can send any file to the server.
 #[wasm_bindgen]
 extern "C" {
     type FormData;
@@ -39,7 +40,7 @@ pub fn signup() -> Html {
                 <input ref={password_ref.clone()} type="text" id="password" />
 
                 <label for="img" >{"Enter your img"}</label>
-                <input ref={img_ref.clone()} type="file" id="img" />
+                <input ref={img_ref.clone()} type="file" id="img" accept="image/*"/>
 
                 <button onclick={move |_| {
 
@@ -56,6 +57,19 @@ pub fn signup() -> Html {
 
                     let form_data = FormData::new();
                     form_data.append("imgForm", img.get(0).unwrap(), img_url);
+
+                    spawn_local(async move {
+
+                        let resp = Request::post("http://127.0.0.1:8000/upload-image/")
+                        .body(form_data)
+                        .send()
+                        .await
+                        .unwrap()
+                        .ok();
+
+                        console_log!(resp)
+
+                    })
 
 
                 }}>{"Create account"}</button>
