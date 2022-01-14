@@ -12,7 +12,7 @@ use uuid::Uuid;
 
 use crate::{
     actors::{ChatServer, ChatSession},
-    db::{create_user, establish_connection},
+    db::{add_user_into_room, create_room, create_user, establish_connection},
 };
 
 // *************** User's info comes from json body; ***************** //
@@ -21,6 +21,14 @@ pub struct UserInfo {
     username: String,
     password: String,
     nickname: String,
+    img_url: String,
+}
+
+// *************** Room's info comes from json body; ***************** //
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RoomInfo {
+    user_id: i32, // user's id. It is needed because the user will be added in this room initially;
+    nickname: String, // room's nickname
     img_url: String,
 }
 
@@ -85,17 +93,56 @@ pub async fn signup(request: HttpRequest, user_info: web::Json<UserInfo>) -> imp
 
     match result {
         Err(e) => {
-            if let Some(text) = e {
-                web::Json(None)
+            if let Some(error_msg) = e {
+                web::Json(None).with_status(StatusCode::CONFLICT)
             } else {
-                web::Json(None)
+                web::Json(None).with_status(StatusCode::INTERNAL_SERVER_ERROR)
             }
         }
         Ok(user) => {
             println!("user: {:?}", user);
-            web::Json(Some(user))
-            // TODO: Now I am returning the `password` also. But later I will not return password
+            web::Json(Some(user)).with_status(StatusCode::OK)
+            // TODO: Note: Now I am returning the `password` also. But later I will not return password
         }
     }
     // TODO: I will return better error messages later.
+}
+
+// ************************************************************************* //
+// ######################### Create new Room ######################### //
+// ************************************************************************* //
+// TODO: I will see how much performance difference without using r2d2 and with using r2d2
+pub async fn room_create(room_info: web::Json<RoomInfo>) -> impl Responder {
+    let create_room_result = create_room(
+        &establish_connection(),
+        room_info.nickname.clone(),
+        room_info.img_url.clone(),
+    );
+
+    match create_room_result {
+        Ok(room) => {
+            let result_adding_user_in_room =
+                add_user_into_room(room_info.user_id, room.id, establish_connection(), true);
+
+            match result_adding_user_in_room {
+                Ok(_) => HttpResponse::Ok(),
+                Err(fake_error) => {
+                    if let Some(_ignore_this_message) = fake_error {
+                        // User is not present
+                        println!("User is not present so returning BadReqeust");
+                        HttpResponse::BadRequest()
+                    } else {
+                        // Server-Side error
+                        HttpResponse::InternalServerError()
+                    }
+                }
+            }
+        }
+        Err(error) => {
+            println!("{}", error);
+            HttpResponse::InternalServerError()
+        }
+    }
+
+    // ""
 }

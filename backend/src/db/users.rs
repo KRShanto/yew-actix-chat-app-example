@@ -3,7 +3,9 @@ use crate::schema::users;
 use diesel::prelude::*;
 use diesel::result;
 
-// #################### Create new User ##################### //
+// ************************************************************************* //
+// ########################### Create new User ############################# //
+// ************************************************************************* //
 pub fn create_user(
     connection: PgConnection,
     username: String,
@@ -37,6 +39,28 @@ pub fn create_user(
             _ => {
                 println!("{:?}", error);
                 Err(None)
+            }
+        },
+    }
+}
+
+// ************************************************************************* //
+// ###################  Show a user is present or not  ##################### //
+// ************************************************************************* //
+pub fn is_user_present(user_id: i32, connection: &PgConnection) -> Result<bool, ()> {
+    use crate::schema::users::dsl::*;
+
+    // trying to load the user
+    let results = users.find(user_id).first::<User>(connection);
+
+    match results {
+        Ok(_user) => Ok(true),
+        Err(error) => match error {
+            result::Error::NotFound => Ok(false),
+            _ => {
+                println!("Error occur when finding the User: {}", error);
+
+                Err(())
             }
         },
     }
