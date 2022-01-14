@@ -10,7 +10,7 @@ table! {
 table! {
     rooms (id) {
         id -> Int4,
-        name -> Varchar,
+        nickname -> Varchar,
     }
 }
 
@@ -38,4 +38,9 @@ joinable!(messages -> users (user_id));
 joinable!(rooms_users -> rooms (room_id));
 joinable!(rooms_users -> users (user_id));
 
-allow_tables_to_appear_in_same_query!(messages, rooms, rooms_users, users,);
+allow_tables_to_appear_in_same_query!(
+    messages,
+    rooms,
+    rooms_users,
+    users,
+);
