@@ -810,6 +810,7 @@ dependencies = [
  "rand 0.8.4",
  "reqwasm",
  "serde",
+ "serde_json",
  "tokio",
  "uuid",
  "wasm-bindgen",

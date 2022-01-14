@@ -1,4 +1,4 @@
-// #![allow(dead_code, unused)]
+#![allow(dead_code, unused)]
 
 use actix::prelude::*;
 use actix_cors::Cors;
@@ -7,7 +7,8 @@ use actix_web::{App, HttpServer};
 
 use backend::{
     actors::ChatServer,
-    route_functions::{save_file, ws_index},
+    db::establish_connection,
+    route_functions::{save_file, signup, ws_index},
 };
 
 #[actix_web::main]
@@ -28,11 +29,15 @@ async fn main() {
                 Cors::default()
                     .allowed_origin("http://127.0.0.1:8080")
                     .allowed_methods(vec!["GET", "POST"])
+                    .allowed_header(actix_web::http::header::CONTENT_TYPE)
                     .supports_credentials(),
             )
             .wrap(middleware::Logger::default())
             .service(web::resource("/ws/").route(web::get().to(ws_index)))
             .service(web::resource("/upload-image/").route(web::post().to(save_file)))
+            .service(
+                web::scope("/auth").route("/sign-up", web::post().to(signup)), // .route("", web::post().to(login)),
+            )
     })
     .bind("127.0.0.1:8000")
     .unwrap()

@@ -1,16 +1,31 @@
 // Some Functions for routes.
-
+#![allow(dead_code, unused)]
 use actix::prelude::*;
 use actix_multipart::Multipart;
-use actix_web::{web, Error, HttpRequest, HttpResponse};
+use actix_web::{http::StatusCode, web, Error, HttpRequest, HttpResponse, Responder};
 use actix_web_actors::ws;
+use diesel::pg::PgConnection;
 use futures_util::TryStreamExt as _;
+use serde::{Deserialize, Serialize};
 use std::io::Write;
 use uuid::Uuid;
 
-use crate::actors::{ChatServer, ChatSession};
+use crate::{
+    actors::{ChatServer, ChatSession},
+    db::{create_user, establish_connection},
+};
 
+// ***** User's info from json body; ***** //
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserInfo {
+    username: String,
+    password: String,
+    nickname: String,
+}
+
+// ************************************************************************* //
 // ######################## Websocket connection ########################### //
+// ************************************************************************* //
 pub async fn ws_index(
     request: HttpRequest,
     stream: web::Payload,
@@ -24,7 +39,9 @@ pub async fn ws_index(
     response
 }
 
+// ************************************************************************* //
 // ######################## Saveing a file ################################# //
+// ************************************************************************* //
 pub async fn save_file(mut payload: Multipart) -> Result<HttpResponse, Error> {
     // iterate over multipart stream
     while let Some(mut field) = payload.try_next().await? {
@@ -51,4 +68,37 @@ pub async fn save_file(mut payload: Multipart) -> Result<HttpResponse, Error> {
     }
 
     Ok(HttpResponse::Ok().into())
+}
+
+// ************************************************************************* //
+// ######################### Creating user account ######################### //
+// ************************************************************************* //
+pub async fn signup(request: HttpRequest, user_info: web::Json<UserInfo>) -> impl Responder {
+    println!("{:?}", request);
+    let result = create_user(
+        establish_connection(),
+        user_info.username.clone(),
+        user_info.password.clone(),
+        user_info.nickname.clone(),
+    );
+
+    if let Err(e) = result {
+        if let Some(text) = e {
+            HttpResponse::with_body(
+                StatusCode::CONFLICT,
+                actix_web::dev::Body::Message(Box::new(text)),
+            )
+        } else {
+            HttpResponse::with_body(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                actix_web::dev::Body::Message(Box::new("User cannot be created")),
+            )
+        }
+    } else {
+        HttpResponse::with_body(
+            StatusCode::OK,
+            actix_web::dev::Body::Message(Box::new("User has been created")),
+        )
+    }
+    // TODO: I will return better error messages later.
 }

@@ -3,7 +3,6 @@ use diesel::prelude::*;
 use dotenv::dotenv;
 use std::env;
 
-// This function should be called from the main function once, then pass this function to every other functions.
 pub fn establish_connection() -> PgConnection {
     dotenv().ok();
 
