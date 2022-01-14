@@ -1,4 +1,4 @@
-use crate::models::NewUser;
+use crate::models::{NewUser, User};
 use crate::schema::users;
 use diesel::prelude::*;
 use diesel::result;
@@ -10,7 +10,7 @@ pub fn create_user(
     password: String,
     nickname: String,
     img_url: String,
-) -> Result<(), Option<String>> {
+) -> Result<User, Option<String>> {
     let new_user = NewUser {
         username,
         password,
@@ -20,10 +20,10 @@ pub fn create_user(
 
     let result = diesel::insert_into(users::table)
         .values(&new_user)
-        .execute(&connection);
+        .get_result::<User>(&connection);
 
     match result {
-        Ok(_) => Ok(()),
+        Ok(user) => Ok(user),
         Err(error) => match error {
             result::Error::DatabaseError(e, _) => match e {
                 result::DatabaseErrorKind::UniqueViolation => Err(Some(

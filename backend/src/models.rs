@@ -1,7 +1,8 @@
 use crate::schema::*;
+use serde::{Deserialize, Serialize};
 
 // ################### users ################# //
-#[derive(Identifiable, Queryable, Associations, Debug, Clone)]
+#[derive(Identifiable, Queryable, Associations, Debug, Clone, Deserialize, Serialize)]
 pub struct User {
     pub id: i32,
     pub nickname: String,

@@ -21,6 +21,16 @@ pub struct UserInfo {
     img_url: String,
 }
 
+// *********** User info recieve from the server ************* //
+#[derive(Debug, Deserialize, Serialize)]
+struct User {
+    pub id: i32,
+    pub nickname: String,
+    pub username: String,
+    pub password: String,
+    pub img_url: String,
+}
+
 #[function_component(Signup)]
 pub fn signup() -> Html {
     let nickname_ref = NodeRef::default();
@@ -69,6 +79,7 @@ pub fn signup() -> Html {
                                 .await
                                 .unwrap();
 
+                         let user_info  = resp.json::<User>().await.unwrap();
 
                         if resp.status() == 200 {
                             // Saving user's info in localstorage;

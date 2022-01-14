@@ -15,7 +15,7 @@ use crate::{
     db::{create_user, establish_connection},
 };
 
-// *************** User's info from json body; ***************** //
+// *************** User's info comes from json body; ***************** //
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserInfo {
     username: String,
@@ -75,7 +75,6 @@ pub async fn save_file(mut payload: Multipart) -> Result<HttpResponse, Error> {
 // ######################### Creating user account ######################### //
 // ************************************************************************* //
 pub async fn signup(request: HttpRequest, user_info: web::Json<UserInfo>) -> impl Responder {
-    println!("{:?}", request);
     let result = create_user(
         establish_connection(),
         user_info.username.clone(),
@@ -84,23 +83,19 @@ pub async fn signup(request: HttpRequest, user_info: web::Json<UserInfo>) -> imp
         user_info.img_url.clone(),
     );
 
-    if let Err(e) = result {
-        if let Some(text) = e {
-            HttpResponse::with_body(
-                StatusCode::CONFLICT,
-                actix_web::dev::Body::Message(Box::new(text)),
-            )
-        } else {
-            HttpResponse::with_body(
-                StatusCode::INTERNAL_SERVER_ERROR,
-                actix_web::dev::Body::Message(Box::new("User cannot be created")),
-            )
+    match result {
+        Err(e) => {
+            if let Some(text) = e {
+                web::Json(None)
+            } else {
+                web::Json(None)
+            }
         }
-    } else {
-        HttpResponse::with_body(
-            StatusCode::OK,
-            actix_web::dev::Body::Message(Box::new("User has been created")),
-        )
+        Ok(user) => {
+            println!("user: {:?}", user);
+            web::Json(Some(user))
+            // TODO: Now I am returning the `password` also. But later I will not return password
+        }
     }
     // TODO: I will return better error messages later.
 }
