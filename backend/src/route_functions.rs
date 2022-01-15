@@ -150,10 +150,9 @@ pub async fn room_create(room_info: Json<RoomInfo>) -> impl Responder {
 
             match result_of_adding_user_in_room {
                 Ok(_) => {
-                    let room_for_client = RoomInfoForClient {
+                    let room_for_client = Room {
                         nickname: room.nickname,
                         id: room.id,
-                        user_id: room_info.user_id,
                         img_url: room_info.img_url.clone(),
                     };
                     Json(Some(room_for_client)).with_status(StatusCode::OK)

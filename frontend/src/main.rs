@@ -40,11 +40,11 @@ fn app() -> Html {
                 <Signup />
 
             </div>
-            <CreateGroup />
 
-            <ContextProvider<UseReducerHandle<RoomListState>> context={room_list.clone()}>
+            <ContextProvider <UseReducerHandle<RoomListState>> context={room_list.clone()}>
+                <CreateGroup />
                 <ShowRooms/>
-            </ ContextProvider<UseReducerHandle<RoomListState>>>
+            </ContextProvider<UseReducerHandle<RoomListState>>>
         </>
     }
 }
