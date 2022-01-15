@@ -54,40 +54,73 @@ pub fn signup() -> Html {
                 <input ref={img_ref.clone()} type="file" id="img" accept="image/*"/>
 
                 <button onclick={move |_| {
-
-                    let nickname = nickname_ref.cast::<HtmlInputElement>().unwrap().value();
-                    let username = username_ref.cast::<HtmlInputElement>().unwrap().value();
-                    let password = password_ref.cast::<HtmlInputElement>().unwrap().value();
-                    let img = img_ref.cast::<HtmlInputElement>().unwrap().files().unwrap();
-                    let img_url =  Uuid::new_v4().to_string() + "----" +   &img.get(0).unwrap().name();
-
+                    let nickname = nickname_ref
+                        .cast::<HtmlInputElement>()
+                        .expect("You need to enter a nickname")
+                        .value();
+                    let username = username_ref
+                        .cast::<HtmlInputElement>()
+                        .expect("You need to enter a username")
+                        .value();
+                    let password = password_ref
+                        .cast::<HtmlInputElement>()
+                        .expect("You need to enter a password")
+                        .value();
+                    let img = img_ref
+                        .cast::<HtmlInputElement>()
+                        .expect("YOu need to give an image")
+                        .files()
+                        .unwrap();
+                    let img_url = Uuid::new_v4().to_string() + "----" + &img.get(0).unwrap().name();
 
                     spawn_local(async move {
                         let user_info = UserInfo {
                             username,
                             password,
                             nickname,
-                            img_url
+                            img_url: img_url.clone(),
                         };
 
                         let user_info_json = serde_json::to_string(&user_info).unwrap();
 
                         let resp = Request::post("http://127.0.0.1:8000/auth/sign-up")
-                                .header("Content-Type", "application/json")
-                                .body(user_info_json)
-                                .send()
-                                .await
-                                .unwrap();
+                            .header("Content-Type", "application/json")
+                            .body(user_info_json)
+                            .send()
+                            .await
+                            .unwrap();
 
-                         let user_info  = resp.json::<User>().await.unwrap();
+                        // Server will send the newly created user with `id`
+                        let user_info = resp.json::<User>().await.unwrap();
 
                         if resp.status() == 200 {
+                            // Uploading image
+                            let form_data = FormData::new().unwrap();
+                            form_data. set_with_blob_and_filename("myform", &img.clone().get(0).unwrap(), &img_url) ;
+
+                            spawn_local(async move {
+
+                                let resp = Request::post("http://127.0.0.1:8000/upload-image")
+                                // .header("content-type", "multipart/form-data")
+                                .body(form_data)
+                                .send()
+                                .await
+                                .unwrap()
+                                .ok();
+
+                                console_log!(resp)
+
+                            });
+
                             // Saving user's info in localstorage;
                             // TODO: Later on I will store these info in cookies. For now, I am storing them in localstorage
                             LocalStorage::set("user_info", user_info).unwrap();
-                            console_log!("Your account has been created successfully and you are logged in automatically");
+                            console_log!(
+                                "Your account has been created successfully and you are logged in automatically"
+                            );
                         }
                     });
+
 
                 }}>{"Create account"}</button>
 
