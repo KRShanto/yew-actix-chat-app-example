@@ -1,7 +1,7 @@
 use yew::prelude::*;
 
 mod components;
-use components::{Login, Signup};
+use components::{CreateGroup, Login, Signup};
 
 fn main() {
     yew::start_app::<App>();
@@ -11,8 +11,12 @@ fn main() {
 fn app() -> Html {
     html! {
         <>
-            <Login />
-            <Signup />
+            <div>
+                <Login />
+                <Signup />
+
+            </div>
+            <CreateGroup />
         </>
     }
 }

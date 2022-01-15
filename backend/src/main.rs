@@ -34,7 +34,7 @@ async fn main() {
             )
             .wrap(middleware::Logger::default())
             .service(web::resource("/ws/").route(web::get().to(ws_index)))
-            .service(web::resource("/upload-image/").route(web::post().to(save_file)))
+            .service(web::resource("/upload-image").route(web::post().to(save_file)))
             .service(
                 web::scope("/auth").route("/sign-up", web::post().to(signup)), // .route("", web::post().to(login)),
             )

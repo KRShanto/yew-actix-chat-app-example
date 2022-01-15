@@ -32,6 +32,15 @@ pub struct RoomInfo {
     img_url: String,
 }
 
+// *************** Room's info send to client; ***************** //
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RoomInfoForClient {
+    id: i32,          // room id
+    user_id: i32,     // user's id.;
+    nickname: String, // room's nickname
+    img_url: String,  // room's image's url
+}
+
 // ************************************************************************* //
 // ######################## Websocket connection ########################### //
 // ************************************************************************* //
@@ -121,26 +130,34 @@ pub async fn room_create(room_info: web::Json<RoomInfo>) -> impl Responder {
 
     match create_room_result {
         Ok(room) => {
-            let result_adding_user_in_room =
+            let result_of_adding_user_in_room =
                 add_user_into_room(room_info.user_id, room.id, establish_connection(), true);
 
-            match result_adding_user_in_room {
-                Ok(_) => HttpResponse::Ok(),
+            match result_of_adding_user_in_room {
+                Ok(_) => {
+                    let room_for_client = RoomInfoForClient {
+                        nickname: room.nickname,
+                        id: room.id,
+                        user_id: room_info.user_id,
+                        img_url: room_info.img_url.clone(),
+                    };
+                    web::Json(Some(room_for_client)).with_status(StatusCode::OK)
+                }
                 Err(fake_error) => {
                     if let Some(_ignore_this_message) = fake_error {
                         // User is not present
                         println!("User is not present so returning BadReqeust");
-                        HttpResponse::BadRequest()
+                        web::Json(None).with_status(StatusCode::BAD_REQUEST)
                     } else {
                         // Server-Side error
-                        HttpResponse::InternalServerError()
+                        web::Json(None).with_status(StatusCode::INTERNAL_SERVER_ERROR)
                     }
                 }
             }
         }
         Err(error) => {
             println!("{}", error);
-            HttpResponse::InternalServerError()
+            web::Json(None).with_status(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
 
