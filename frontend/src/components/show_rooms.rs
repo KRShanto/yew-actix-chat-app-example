@@ -65,18 +65,21 @@ pub fn show_rooms() -> Html {
 
     html! {
         <>
+        <hr />
             <br /><br /><br />
-
             <div>{"Showing all your rooms"}</div>
+            <ul>
             {
-                 room_list.rooms.iter().map(|room| {
+                room_list.rooms.iter().map(|room| {
                     html! {
-                        <h2>{room.nickname.clone()}</h2>
+                        <li>{room.nickname.clone()}</li>
                     }
-                 }).collect::<Html>()
+                }).collect::<Html>()
             }
+            </ul>
 
             <br /><br /><br />
+            <hr />
 
         </>
     }
