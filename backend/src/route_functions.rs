@@ -2,7 +2,7 @@
 #![allow(dead_code, unused)]
 use actix::prelude::*;
 use actix_multipart::Multipart;
-use actix_web::{http::StatusCode, web, Error, HttpRequest, HttpResponse, Responder};
+use actix_web::{http::StatusCode, web, web::Json, Error, HttpRequest, HttpResponse, Responder};
 use actix_web_actors::ws;
 use diesel::pg::PgConnection;
 use futures_util::TryStreamExt as _;
@@ -12,8 +12,18 @@ use uuid::Uuid;
 
 use crate::{
     actors::{ChatServer, ChatSession},
-    db::{add_user_into_room, create_room, create_user, establish_connection},
+    db::{
+        add_user_into_room, create_room, establish_connection, get_all_rooms_for_a_user,
+        users::{create_user, is_user_present},
+    },
+    models::Room,
 };
+
+// *************** User's id comes from json body; ***************** //
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserId {
+    user_id: i32,
+}
 
 // *************** User's info comes from json body; ***************** //
 #[derive(Debug, Serialize, Deserialize)]
@@ -39,6 +49,11 @@ pub struct RoomInfoForClient {
     user_id: i32,     // user's id.;
     nickname: String, // room's nickname
     img_url: String,  // room's image's url
+}
+// *************** Vector of Room send to client; ***************** //
+#[derive(Debug, Serialize, Deserialize)]
+pub struct VecOfRoom {
+    rooms: Vec<Room>,
 }
 
 // ************************************************************************* //
@@ -91,7 +106,7 @@ pub async fn save_file(mut payload: Multipart) -> Result<HttpResponse, Error> {
 // ************************************************************************* //
 // ######################### Creating user account ######################### //
 // ************************************************************************* //
-pub async fn signup(request: HttpRequest, user_info: web::Json<UserInfo>) -> impl Responder {
+pub async fn signup(request: HttpRequest, user_info: Json<UserInfo>) -> impl Responder {
     let result = create_user(
         establish_connection(),
         user_info.username.clone(),
@@ -103,14 +118,14 @@ pub async fn signup(request: HttpRequest, user_info: web::Json<UserInfo>) -> imp
     match result {
         Err(e) => {
             if let Some(error_msg) = e {
-                web::Json(None).with_status(StatusCode::CONFLICT)
+                Json(None).with_status(StatusCode::CONFLICT)
             } else {
-                web::Json(None).with_status(StatusCode::INTERNAL_SERVER_ERROR)
+                Json(None).with_status(StatusCode::INTERNAL_SERVER_ERROR)
             }
         }
         Ok(user) => {
             println!("user: {:?}", user);
-            web::Json(Some(user)).with_status(StatusCode::OK)
+            Json(Some(user)).with_status(StatusCode::OK)
             // TODO: Note: Now I am returning the `password` also. But later I will not return password
         }
     }
@@ -121,7 +136,7 @@ pub async fn signup(request: HttpRequest, user_info: web::Json<UserInfo>) -> imp
 // ######################### Create new Room ######################### //
 // ************************************************************************* //
 // TODO: I will see how much performance difference without using r2d2 and with using r2d2
-pub async fn room_create(room_info: web::Json<RoomInfo>) -> impl Responder {
+pub async fn room_create(room_info: Json<RoomInfo>) -> impl Responder {
     let create_room_result = create_room(
         &establish_connection(),
         room_info.nickname.clone(),
@@ -141,7 +156,7 @@ pub async fn room_create(room_info: web::Json<RoomInfo>) -> impl Responder {
                         user_id: room_info.user_id,
                         img_url: room_info.img_url.clone(),
                     };
-                    web::Json(Some(room_for_client)).with_status(StatusCode::OK)
+                    Json(Some(room_for_client)).with_status(StatusCode::OK)
                 }
                 Err(fake_error) => {
                     if let Some(_ignore_this_message) = fake_error {
@@ -150,16 +165,33 @@ pub async fn room_create(room_info: web::Json<RoomInfo>) -> impl Responder {
                         web::Json(None).with_status(StatusCode::BAD_REQUEST)
                     } else {
                         // Server-Side error
-                        web::Json(None).with_status(StatusCode::INTERNAL_SERVER_ERROR)
+                        Json(None).with_status(StatusCode::INTERNAL_SERVER_ERROR)
                     }
                 }
             }
         }
         Err(error) => {
             println!("{}", error);
-            web::Json(None).with_status(StatusCode::INTERNAL_SERVER_ERROR)
+            Json(None).with_status(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
+}
 
-    // ""
+// ************************************************************************* //
+// ########################### Get all Room ################################ //
+// ************************************************************************* //
+pub async fn get_rooms(user_info: Json<UserId>) -> impl Responder {
+    // Check if the user is available or not! The client shouldn't send this user's id where the user is not available
+    if let Ok(value) = is_user_present(user_info.user_id, &establish_connection()) {
+        match value {
+            true => {
+                let rooms = get_all_rooms_for_a_user(user_info.user_id, establish_connection());
+
+                Json(Some(rooms)).with_status(StatusCode::OK)
+            }
+            false => Json(None).with_status(StatusCode::BAD_REQUEST),
+        }
+    } else {
+        Json(None).with_status(StatusCode::INTERNAL_SERVER_ERROR)
+    }
 }

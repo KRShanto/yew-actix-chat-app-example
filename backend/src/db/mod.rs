@@ -4,5 +4,5 @@ pub mod rooms;
 pub mod users;
 
 pub use connection::establish_connection;
-pub use rooms::{add_user_into_room, create_room};
+pub use rooms::{add_user_into_room, create_room, get_all_rooms_for_a_user};
 pub use users::{create_user, is_user_present};

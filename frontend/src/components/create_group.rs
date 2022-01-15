@@ -7,6 +7,8 @@ use web_sys::HtmlInputElement;
 use weblog::console_log;
 use yew::prelude::*;
 
+use crate::User;
+
 // *************** Room's info send to server; ***************** //
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RoomInfo {
@@ -22,16 +24,6 @@ pub struct Room {
     user_id: i32,
     nickname: String,
     img_url: String,
-}
-
-// *********** User info get from the localstorage ************* //
-#[derive(Debug, Deserialize, Serialize)]
-struct User {
-    pub id: i32,
-    pub nickname: String,
-    pub username: String,
-    pub password: String,
-    pub img_url: String,
 }
 
 #[function_component(CreateGroup)]

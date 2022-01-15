@@ -64,3 +64,33 @@ pub fn add_user_into_room(
     }
     // TODO: I will provide some helpful errors later
 }
+
+// ************************************************************************* //
+// ######################  Get all rooms for a User  ####################### //
+// ************************************************************************* //
+pub fn get_all_rooms_for_a_user(argu_user_id: i32, connection: PgConnection) -> Vec<Room> {
+    // This function will return all rooms where the user is currently joined. No matter if the field `accepted` is true or false.
+    use crate::schema::rooms::dsl::id as rooms_id;
+    use crate::schema::rooms::dsl::*;
+    use crate::schema::rooms_users::dsl::*;
+
+    // getting all RoomsUser where the user is currently joined
+    let results: Vec<RoomsUser> = rooms_users
+        .filter(user_id.eq(argu_user_id))
+        .load::<RoomsUser>(&connection)
+        .unwrap();
+    // TODO: I will hanlde these errors later
+
+    // Now getting all Room
+    let mut all_rooms: Vec<Room> = Vec::new();
+    for room_user in results {
+        let room: Room = rooms
+            .filter(rooms_id.eq(room_user.room_id))
+            .first::<Room>(&connection)
+            .unwrap();
+
+        all_rooms.push(room);
+    }
+
+    all_rooms
+}
