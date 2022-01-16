@@ -1,10 +1,12 @@
-use crate::actors::{ChatServer, ClientSendMessage, Join, SendMessage};
+#![allow(dead_code, unused)]
 
-use colored::*;
-use std::time::{Duration, Instant};
+use crate::actors::{ChatServer, ClientSendMessage, Join, SendMessage};
 
 use actix::prelude::*;
 use actix_web_actors::ws;
+use colored::*;
+use serde::{Deserialize, Serialize};
+use std::time::{Duration, Instant};
 
 const HEARTBEAT_TIMEOUT: Duration = Duration::from_secs(5);
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
@@ -89,10 +91,39 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ChatSession {
             Ok(WsMessage::Text(text)) => {
                 let room_id_not_found_err_msg = format!("{}", "Developer error: Looks like you forgot to send the command `change_room` to server :(\nreason: When the user clicks on any room a command `change_room` should sent to the server. Else it cannot specify which room is the user joined.".red());
 
-                self.server.do_send(ClientSendMessage {
-                    message: text,
-                    current_room_id: self.current_room_id.expect(&room_id_not_found_err_msg),
-                })
+                // self.server.do_send(ClientSendMessage {
+                //     message: text,
+                //     current_room_id: self.current_room_id.expect(&room_id_not_found_err_msg),
+                // })
+
+                println!(
+                    "{}",
+                    format!("{} {}", format!("{}", "Client has sent: ".green()), text)
+                );
+                // if the client sends a json, then convert it to rust object;
+
+                // client can send this;
+                #[derive(Debug, Serialize, Deserialize)]
+                struct Product {
+                    name: String,
+                    cost: usize,
+                }
+
+                match serde_json::from_str::<Product>(&text) {
+                    Ok(product) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "{} {:?}",
+                                format!("{}", "Client has sent a product: ".green()),
+                                product
+                            )
+                        );
+                    }
+                    Err(_) => println!("Client didn't send a product this time!"),
+                }
+
+                ctx.text(text);
             }
             Ok(WsMessage::Binary(bin)) => ctx.binary(bin),
             Ok(WsMessage::Close(reason)) => {
