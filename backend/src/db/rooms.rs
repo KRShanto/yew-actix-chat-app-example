@@ -2,6 +2,7 @@
 use crate::db::users::is_user_present;
 use crate::models::{NewRoom, NewRoomsUser, Room, RoomsUser};
 use crate::schema::{rooms, rooms_users};
+use colored::*;
 use diesel::prelude::*;
 use diesel::result;
 
@@ -77,6 +78,7 @@ pub fn get_all_rooms_for_a_user(argu_user_id: i32, connection: PgConnection) -> 
     // getting all RoomsUser where the user is currently joined
     let results: Vec<RoomsUser> = rooms_users
         .filter(user_id.eq(argu_user_id))
+        .filter(accepted.eq(true))
         .load::<RoomsUser>(&connection)
         .unwrap();
     // TODO: I will hanlde these errors later
@@ -93,4 +95,33 @@ pub fn get_all_rooms_for_a_user(argu_user_id: i32, connection: PgConnection) -> 
     }
 
     all_rooms
+}
+
+// ************************************************************************* //
+// ###################  Show a room is present or not  ##################### //
+// ************************************************************************* //
+pub fn is_room_present(room_id: i32, connection: &PgConnection) -> Result<bool, ()> {
+    use crate::schema::rooms::dsl::*;
+
+    // trying to load the user
+    let results = rooms.find(room_id).first::<Room>(connection);
+
+    match results {
+        Ok(_room) => Ok(true),
+        Err(error) => match error {
+            result::Error::NotFound => Ok(false),
+            _ => {
+                println!(
+                    "{}",
+                    format!(
+                        "{} {}",
+                        format!("{}", "Error occur when finding the User: ".red()),
+                        error
+                    )
+                );
+
+                Err(())
+            }
+        },
+    }
 }
