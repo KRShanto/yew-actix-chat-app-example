@@ -13,8 +13,8 @@ use uuid::Uuid;
 use crate::{
     actors::{ChatServer, ChatSession},
     db::{
-        add_user_into_room, create_room, establish_connection, get_all_rooms_for_a_user,
-        users::{create_user, is_user_present},
+        add_user_into_room, create_room, create_user, establish_connection,
+        get_all_rooms_for_a_user, is_room_present, is_user_present,
     },
     models::Room,
 };
@@ -52,8 +52,15 @@ pub struct RoomInfoForClient {
 }
 // *************** Vector of Room send to client; ***************** //
 #[derive(Debug, Serialize, Deserialize)]
-pub struct VecOfRoom {
+pub struct ListOfRoom {
     rooms: Vec<Room>,
+}
+
+// *************** Some info when sending a join request ***************** //
+#[derive(Debug, Serialize, Deserialize)]
+pub struct JoinRoomRequest {
+    user_id: i32, // user's id
+    room_id: i32, // room's id
 }
 
 // ************************************************************************* //
@@ -172,6 +179,43 @@ pub async fn room_create(room_info: Json<RoomInfo>) -> impl Responder {
             println!("{}", error);
             Json(None).with_status(StatusCode::INTERNAL_SERVER_ERROR)
         }
+    }
+}
+
+// ************************************************************************* //
+// ##################### Make Join request to a Room ####################### //
+// ************************************************************************* //
+pub async fn make_join_request(info: Json<JoinRoomRequest>) -> impl Responder {
+    // check if the room is valid or not
+    // TODO: If any user already joined to that room or have request pending to that room, then he/she will get a message. I will make that restriction later.
+    if let Ok(value) = is_room_present(info.room_id, &establish_connection()) {
+        match value {
+            true => {
+                // Adding user in the room with `accepted` = false
+                if let Err(value) =
+                    add_user_into_room(info.user_id, info.room_id, establish_connection(), false)
+                {
+                    match value {
+                        Some(_) => {
+                            // TODO: user not found; I will handle this later. For now I am just returning BadReqeust
+                            HttpResponse::BadRequest()
+                        }
+                        None => {
+                            // Server side error;
+                            HttpResponse::InternalServerError()
+                        }
+                    }
+                } else {
+                    HttpResponse::Ok()
+                }
+            }
+            false => {
+                HttpResponse::NoContent() // 204 http status;
+                                          // TODO: For now I am just returning this response, Later I might be considering returning any other response
+            }
+        }
+    } else {
+        HttpResponse::InternalServerError()
     }
 }
 

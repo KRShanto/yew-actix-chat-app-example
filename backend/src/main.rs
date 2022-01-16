@@ -8,7 +8,7 @@ use actix_web::{App, HttpServer};
 use backend::{
     actors::ChatServer,
     db::establish_connection,
-    route_functions::{get_rooms, room_create, save_file, signup, ws_index},
+    route_functions::{get_rooms, make_join_request, room_create, save_file, signup, ws_index},
 };
 
 #[actix_web::main]
@@ -40,6 +40,7 @@ async fn main() {
             )
             .service(web::resource("/create-room").route(web::post().to(room_create)))
             .service(web::resource("/get-rooms").route(web::post().to(get_rooms)))
+            .service(web::resource("/room-join-request").route(web::post().to(make_join_request)))
     })
     .bind("127.0.0.1:8000")
     .unwrap()
