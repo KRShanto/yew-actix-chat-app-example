@@ -66,8 +66,8 @@ pub fn show_rooms() -> Html {
     html! {
         <>
         <hr />
-            <br /><br /><br />
-            <div>{"Showing all your rooms"}</div>
+            <br />
+            <h1>{"Showing all your rooms"}</h1>
             <ul>
             {
                 room_list.rooms.iter().map(|room| {
@@ -78,7 +78,7 @@ pub fn show_rooms() -> Html {
             }
             </ul>
 
-            <br /><br /><br />
+            <br />
             <hr />
 
         </>

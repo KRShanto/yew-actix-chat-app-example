@@ -41,6 +41,8 @@ pub fn signup() -> Html {
     html! {
         <>
             <div class="signup">
+                <h1>{"Create account"}</h1>
+
                 <label for="nickname" >{"Enter your nickname"}</label>
                 <input ref={nickname_ref.clone()} type="text" id="nickname" value="5" />
 

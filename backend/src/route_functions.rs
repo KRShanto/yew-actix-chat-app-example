@@ -64,7 +64,6 @@ pub async fn ws_index(
     stream: web::Payload,
     server: web::Data<Addr<ChatServer>>,
 ) -> Result<HttpResponse, Error> {
-    println!("request: {:?}", request);
     let response = ws::start(ChatSession::new(server.get_ref().clone()), &request, stream);
 
     println!("response: {:?}", response);
