@@ -24,6 +24,7 @@ pub struct NewUser {
 #[derive(Identifiable, Queryable, Associations, Debug, Clone, Deserialize, Serialize)]
 pub struct Room {
     pub id: i32,
+    // TODO: Later on I will give another field called `uniqe_name`;
     pub nickname: String,
     pub img_url: String,
 }
