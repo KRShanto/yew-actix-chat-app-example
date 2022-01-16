@@ -29,8 +29,8 @@ pub struct RoomInfo {
 //     img_url: String,
 // }
 
-#[function_component(CreateGroup)]
-pub fn create_group() -> Html {
+#[function_component(CreateRoom)]
+pub fn create_room() -> Html {
     let user_id_state: UseStateHandle<Option<i32>> = use_state(|| None);
     let nickname_ref = NodeRef::default();
     let img_ref = NodeRef::default();
@@ -56,7 +56,7 @@ pub fn create_group() -> Html {
         <br />
         <hr />
 
-        <h3>{"Create Group"}</h3>
+        <h1>{"Create Room"}</h1>
 
             <label for="create-group-nickname">{"Enter a name for this group"}</label>
             <input ref={nickname_ref.clone()} type="text" name="create-group-nickname" id="create-group-nickname" />
