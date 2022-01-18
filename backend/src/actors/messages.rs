@@ -1,21 +1,6 @@
-// use actix_cors::Cors;
-// use actix_web::{
-//     body::Body,
-//     get,
-//     http::{header, StatusCode},
-//     middleware::Logger,
-//     post,
-//     web::Json,
-//     App, HttpResponse, HttpServer,
-// };
-// use std::collections::HashMap;
-// use std::time::{Duration, Instant};
-
 use actix::prelude::*;
-// use actix_files as fs;
-// use actix_web::{middleware, web, Error, HttpRequest};
-// use actix_web_actors::ws;
-// use rand::{thread_rng, Rng};
+
+// TODO: I will write better comments later;
 
 // The Message for sending messages to clients
 #[derive(Message)]
@@ -32,10 +17,27 @@ pub struct Join {
     pub addr: Recipient<SendMessage>, // address of `ChatSession`
 }
 
-// When a message comes from a chat room, this message will send to the `ChatServer` to pass all other actors.
+// When a message comes from a chat room, this message will send to the `ChatServer` to pass that message all other actors.
 #[derive(Message)]
 #[rtype(result = "()")]
 pub struct ClientSendMessage {
     pub message: String,
     pub current_room_id: i32,
+}
+
+// The message to send only a perticular client.
+// ChatSession -> ChatServer
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct ClientSendOneMessage {
+    pub message: String,
+    pub user_id: i32,
+}
+// The message to send only a perticular client.
+// ChatServer -> ChatSession
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct SendOneMessage {
+    pub message: String,
+    pub user_id: i32,
 }
