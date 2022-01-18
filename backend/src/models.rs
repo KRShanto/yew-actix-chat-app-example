@@ -35,7 +35,7 @@ pub struct NewRoom {
     pub nickname: String,
     pub img_url: String,
 }
-
+// ################### rooms_users ################# //
 #[derive(Identifiable, Queryable, Associations, Debug, Clone, Deserialize, Serialize)]
 pub struct RoomsUser {
     pub id: i32,
@@ -50,4 +50,21 @@ pub struct NewRoomsUser {
     pub user_id: i32,
     pub room_id: i32,
     pub accepted: bool,
+}
+
+// ################### messages ################# //
+#[derive(Identifiable, Queryable, Associations, Debug, Clone, Deserialize, Serialize)]
+pub struct Message {
+    pub id: i32,
+    pub msg: String,
+    pub user_id: i32,
+    pub room_id: i32,
+}
+
+#[derive(Insertable)]
+#[table_name = "messages"]
+pub struct NewMessage {
+    pub msg: String,
+    pub user_id: i32,
+    pub room_id: i32,
 }

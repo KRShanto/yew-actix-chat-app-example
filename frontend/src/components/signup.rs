@@ -110,8 +110,6 @@ pub fn signup() -> Html {
                                 .unwrap()
                                 .ok();
 
-                                console_log!(resp)
-
                             });
 
                             // Saving user's info in localstorage;

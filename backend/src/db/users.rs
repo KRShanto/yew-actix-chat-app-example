@@ -1,5 +1,7 @@
 use crate::models::{NewUser, User};
-use crate::schema::users;
+use crate::schema::users::dsl::*;
+
+use colored::*;
 use diesel::prelude::*;
 use diesel::result;
 
@@ -8,19 +10,19 @@ use diesel::result;
 // ************************************************************************* //
 pub fn create_user(
     connection: PgConnection,
-    username: String,
-    password: String,
-    nickname: String,
-    img_url: String,
+    argu_username: String,
+    argu_password: String,
+    argu_nickname: String,
+    argu_img_url: String,
 ) -> Result<User, Option<String>> {
     let new_user = NewUser {
-        username,
-        password,
-        nickname,
-        img_url,
+        username: argu_username,
+        password: argu_password,
+        nickname: argu_nickname,
+        img_url: argu_img_url,
     };
 
-    let result = diesel::insert_into(users::table)
+    let result = diesel::insert_into(crate::schema::users::table)
         .values(&new_user)
         .get_result::<User>(&connection);
 
@@ -63,5 +65,23 @@ pub fn is_user_present(user_id: i32, connection: &PgConnection) -> Result<bool, 
                 Err(())
             }
         },
+    }
+}
+
+// ************************************************************************* //
+// ################### Get a user based on his/her id ###################### //
+// ************************************************************************* //
+pub fn get_a_user_from_id(user_id: i32, connection: &PgConnection) -> Result<User, ()> {
+    let result: Result<User, _> = users.filter(id.eq(user_id)).get_result::<User>(connection);
+
+    match result {
+        Ok(user) => Ok(user),
+        Err(error) => {
+            println!(
+                "{}",
+                format!("An error occured when finding a user. Error: {}", error).red()
+            );
+            Err(())
+        }
     }
 }

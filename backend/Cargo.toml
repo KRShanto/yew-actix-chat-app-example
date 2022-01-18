@@ -16,7 +16,7 @@ futures = "0.3"
 actix-web-actors = "*"
 rand =  "*"
 colored = "*"
-diesel = { version = "1.4.4", features = ["postgres"] }
+diesel = { version = "1.4.4", features = ["postgres", "r2d2"] }
 dotenv = "0.15.0"
 futures-util = "0.3"
 sanitize-filename = "0.2"

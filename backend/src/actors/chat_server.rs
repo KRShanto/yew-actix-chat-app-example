@@ -1,5 +1,6 @@
 use crate::actors::{ClientSendMessage, Join, SendMessage};
 use actix::prelude::*;
+use colored::*;
 
 // The main actor for all other actors for communication. This actor will handle all other actor's messages and pass them that messages
 pub struct ChatServer {
@@ -14,7 +15,7 @@ impl Handler<Join> for ChatServer {
     type Result = ();
 
     fn handle(&mut self, msg: Join, _ctx: &mut Context<Self>) {
-        println!("A new client joined the chat server");
+        println!("{}", "A new client joined the chat server".blue().bold());
         self.addr_of_all_other_actors.push(Some(msg.addr));
     }
 }
@@ -26,11 +27,20 @@ impl Handler<ClientSendMessage> for ChatServer {
         // Sending messages to all actors.
         for addr in self.addr_of_all_other_actors.clone() {
             if let Some(addr) = addr {
-                addr.do_send(SendMessage {
+                match addr.do_send(SendMessage {
                     message: msg.message.clone(),
                     current_room_id: msg.current_room_id.clone(),
-                })
-                .unwrap();
+                }) {
+                    Ok(_) => {}
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!("Failed to send websocket message: {:?}", error)
+                                .red()
+                                .bold()
+                        );
+                    }
+                }
             }
         }
     }

@@ -1,6 +1,6 @@
-#![allow(dead_code, unused)]
+// #![allow(dead_code, unused)]
 use crate::db::users::is_user_present;
-use crate::models::{NewRoom, NewRoomsUser, Room, RoomsUser};
+use crate::models::{NewRoom, NewRoomsUser, Room, RoomsUser, User};
 use crate::schema::{rooms, rooms_users};
 use colored::*;
 use diesel::prelude::*;
@@ -124,4 +124,33 @@ pub fn is_room_present(room_id: i32, connection: &PgConnection) -> Result<bool, 
             }
         },
     }
+}
+
+// ************************************************************************* //
+// ######################  Get all User from a Room  ####################### //
+// ************************************************************************* //
+pub fn get_all_users_from_a_room(argu_room_id: i32, connection: &PgConnection) -> Vec<User> {
+    // You need to validate the the room;
+    use crate::schema::rooms_users::dsl::*;
+    use crate::schema::users::dsl::id as user_id;
+    use crate::schema::users::dsl::*;
+
+    // get all rooms_users where room_id = argu_room_id
+    let room_users: Vec<RoomsUser> = rooms_users
+        .filter(room_id.eq(argu_room_id))
+        .load(connection)
+        .unwrap();
+
+    // get all users where id = room_users.user_id;
+    let mut list_of_users: Vec<User> = Vec::new();
+
+    for i in room_users {
+        list_of_users.push(
+            users
+                .filter(user_id.eq(i.user_id))
+                .first(connection)
+                .unwrap(),
+        );
+    }
+    list_of_users
 }

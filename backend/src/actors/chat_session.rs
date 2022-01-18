@@ -1,6 +1,9 @@
-#![allow(dead_code, unused)]
+// #![allow(dead_code, unused)]
 
-use crate::actors::{ChatServer, ClientSendMessage, Join, SendMessage};
+use crate::{
+    actors::{ChatServer, ClientSendMessage, Join, SendMessage},
+    db::create_message,
+};
 
 use actix::prelude::*;
 use actix_web_actors::ws;
@@ -10,6 +13,57 @@ use std::time::{Duration, Instant};
 
 const HEARTBEAT_TIMEOUT: Duration = Duration::from_secs(5);
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
+
+// A command comes from client to server. client -> server
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+enum WebsocketServerCommand {
+    UserSetUp,
+    ChangeRoom,
+    SendMessage,
+}
+// A command sends to client from server. server -> client
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+enum WebsocketClientCommand {
+    AddMessage,
+}
+
+// `UserSetUp` commmand
+// info of user when the `UserSetUp` command is executed from client;
+// Use this command when the websocket is first connected to the server
+#[derive(Debug, Serialize, Deserialize)]
+struct UserID {
+    command_type: WebsocketServerCommand,
+    user_id: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct RoomID {
+    command_type: WebsocketServerCommand,
+    room_id: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct MessageInfoForServer {
+    // This will come from the client;
+    command_type: WebsocketServerCommand,
+    msg: String,
+    room_id: i32,
+    user_id: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct MessageInfoForClient {
+    // This will send to the client;
+    id: i32,
+    command_type: WebsocketClientCommand,
+    msg: String,
+    room_id: i32,
+    user_id: i32,
+}
+
+fn room_not_found_error() -> String {
+    format!("{}", "Developer Error: Looks like you forgot to execute the command `ChangeRoom`. No room found in this actor. Consider sending this command when user has clicked a chatroom".red())
+}
 
 // Actor for each reqeust/client. This actor will responsible for taking client's messages and pass them in the server `ChatServer`. And then `ChatServer` will pass that message to other Actors or will do something else
 pub struct ChatSession {
@@ -65,11 +119,13 @@ impl Handler<SendMessage> for ChatSession {
     type Result = ();
 
     fn handle(&mut self, msg: SendMessage, ctx: &mut Self::Context) {
-        let err_msg =format!("{}", "Developer error: Looks like you forgot to send the command `change_room` to server :(\nreason: When the user clicks on any room a command `change_room` should sent to the server. Else it cannot specify which room is the user joined.".red());
-
         // Sending message to client/browser
-        if msg.current_room_id == self.current_room_id.expect(&err_msg) {
-            ctx.text(msg.message)
+        if let Some(room_id) = self.current_room_id {
+            println!("{}", "Sending message to client/browser".green().bold());
+
+            if msg.current_room_id == room_id {
+                ctx.text(msg.message)
+            }
         }
     }
 }
@@ -88,48 +144,73 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ChatSession {
                 println!("Pong");
                 self.hb = Instant::now();
             }
-            Ok(WsMessage::Text(text)) => {
-                let room_id_not_found_err_msg = format!("{}", "Developer error: Looks like you forgot to send the command `change_room` to server :(\nreason: When the user clicks on any room a command `change_room` should sent to the server. Else it cannot specify which room is the user joined.".red());
-
-                // self.server.do_send(ClientSendMessage {
-                //     message: text,
-                //     current_room_id: self.current_room_id.expect(&room_id_not_found_err_msg),
-                // })
-
-                println!(
-                    "{}",
-                    format!("{} {}", format!("{}", "Client has sent: ".green()), text)
-                );
-                // if the client sends a json, then convert it to rust object;
-
-                // client can send this;
-                #[derive(Debug, Serialize, Deserialize)]
-                struct Product {
-                    name: String,
-                    cost: usize,
-                }
-
-                match serde_json::from_str::<Product>(&text) {
-                    Ok(product) => {
-                        println!(
-                            "{}",
-                            format!(
-                                "{} {:?}",
-                                format!("{}", "Client has sent a product: ".green()),
-                                product
-                            )
-                        );
-                    }
-                    Err(_) => println!("Client didn't send a product this time!"),
-                }
-
-                ctx.text(text);
-            }
             Ok(WsMessage::Binary(bin)) => ctx.binary(bin),
             Ok(WsMessage::Close(reason)) => {
                 ctx.close(reason);
                 ctx.stop();
             }
+            Ok(WsMessage::Text(text)) => {
+                // TODO: These commands are not following DRY. I would consider better approach. maybe I will make a macro for these;
+
+                // *************** User setup command *************** //
+                if let Ok(command) = serde_json::from_str::<UserID>(&text) {
+                    if command.command_type == WebsocketServerCommand::UserSetUp {
+                        // Set the self.user_id
+                        self.user_id = Some(command.user_id);
+                        println!("{}", "Command executed for setting up user".green());
+                    }
+                }
+                // *************** Room changing command *************** //
+                if let Ok(command) = serde_json::from_str::<RoomID>(&text) {
+                    if command.command_type == WebsocketServerCommand::ChangeRoom {
+                        // change the self.current_room;
+                        self.current_room_id = Some(command.room_id);
+                        println!("{}", "Command executed for changing room".green());
+                    }
+                }
+                // *************** Message Sending and Creating command *************** //
+                if let Ok(command) = serde_json::from_str::<MessageInfoForServer>(&text) {
+                    if command.command_type == WebsocketServerCommand::SendMessage {
+                        // Create new message
+                        // TODO: For now I am assuming that the user's id and room's id will be valid. But later I will validate this
+
+                        if let Ok(message) =
+                            create_message(command.msg, command.user_id, command.room_id)
+                        {
+                            // Send AddMessage command to the client;
+                            self.server.do_send(ClientSendMessage {
+                                current_room_id: self
+                                    .current_room_id
+                                    .expect(&room_not_found_error()),
+                                message: serde_json::to_string(&MessageInfoForClient {
+                                    command_type: WebsocketClientCommand::AddMessage,
+                                    id: message.id,
+                                    msg: message.msg,
+                                    room_id: message.room_id,
+                                    user_id: message.user_id,
+                                })
+                                .unwrap(),
+                            });
+                            println!(
+                                "{}",
+                                "Command executed for Sending and creating and sending new message"
+                                    .green()
+                                    .bold()
+                            );
+                        } else {
+                            println!(
+                                "{}",
+                                "Failed to send AddMessage command. Message didn't created"
+                                    .red()
+                                    .bold()
+                            );
+                        }
+                    }
+                }
+
+                ctx.text(text);
+            }
+
             _ => ctx.stop(),
         }
     }

@@ -1,13 +1,19 @@
+#![allow(dead_code, unused)]
 use gloo_storage::{LocalStorage, Storage};
 use reqwasm::http::Request;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
-use weblog::console_log;
+use web_sys::WebSocket;
+use weblog::{console_log, console_warn};
 use yew::prelude::*;
 
 use crate::{
-    reducers::{RoomListAction, RoomListState},
-    Room, User,
+    reducers::{
+        CurrentRoomAction, CurrentRoomMessageAction, CurrentRoomMessageState, CurrentRoomState,
+        RoomListAction, RoomListState,
+    },
+    websocket::{WebsocketServerCommand, WsRoomID},
+    Room, RoomID, User,
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -23,7 +29,18 @@ pub struct ShowRoomsProps {
 #[function_component(ShowRooms)]
 pub fn show_rooms() -> Html {
     let user_id_state: UseStateHandle<Option<i32>> = use_state(|| None);
-    let room_list = use_context::<UseReducerHandle<RoomListState>>().expect("No context provided!!!. A prop should be provided with `<UseReducerHandle<RoomListState>>`");
+
+    let room_list = use_context::<UseReducerHandle<RoomListState>>().expect(
+        "No context provided!!!. A context should be provided with `<UseReducerHandle<RoomListState>>`"
+    );
+    let current_room_details = use_context::<UseReducerHandle<CurrentRoomState>>().expect(
+        "No context provided!!!. A context should be provided with `UseReducerHandle<CurrentRoomState>"
+    );
+    let current_room_messages = use_context::<UseReducerHandle<CurrentRoomMessageState>>().expect(
+        "No context provided!!!. A context should be provided with `<UseReducerHandle<CurrentRoomMessageState>>`"
+    );
+    let ws = use_context::<UseStateHandle<Option<WebSocket>>>()
+        .expect("No context provided!!!. A context should be provided with `UseStateHandle<Option<WebSocket>>`");
 
     {
         let room_list = room_list.clone();
@@ -71,8 +88,34 @@ pub fn show_rooms() -> Html {
             <ul>
             {
                 room_list.rooms.iter().map(|room| {
+                    let room = room.clone();
+                    let ws = ws.clone();
+                    let current_room_details = current_room_details.clone();
+                    let current_room_messages = current_room_messages.clone();
                     html! {
-                        <li>{room.nickname.clone()}</li>
+                        <>
+                            <li>
+                                {room.id}{". "}{room.nickname.clone()}
+                                <button onclick={ move |_| {
+                                    // changing the current room state;
+                                    current_room_details.dispatch(CurrentRoomAction::SelectRoom(room.clone()));
+
+                                    // executing `ChangeRoom` command on websocket;
+                                    if let Some(ws) = (*ws).clone() {
+
+                                        ws.send_with_str(
+                                            &serde_json::to_string(&WsRoomID {
+                                                command_type: WebsocketServerCommand::ChangeRoom,
+                                                room_id: room.id,
+                                            })
+                                            .unwrap(),
+                                        );
+                                    }else {
+                                        console_warn!("Websocket is not ready yet. The value of the context is still None;")
+                                    }
+                                }}>{"Select"}</button>
+                            </li>
+                        </>
                     }
                 }).collect::<Html>()
             }

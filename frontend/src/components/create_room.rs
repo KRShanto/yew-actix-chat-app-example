@@ -20,15 +20,6 @@ pub struct RoomInfo {
     img_url: String,
 }
 
-// *************** Room's info comes from server; ***************** //
-// #[derive(Debug, Serialize, Deserialize)]
-// pub struct Room {
-//     id: i32,
-//     user_id: i32,
-//     nickname: String,
-//     img_url: String,
-// }
-
 #[function_component(CreateRoom)]
 pub fn create_room() -> Html {
     let user_id_state: UseStateHandle<Option<i32>> = use_state(|| None);
@@ -90,7 +81,7 @@ pub fn create_room() -> Html {
                             user_id: (*user_id_state).unwrap().clone(),
                         };
 
-                        console_log!(format!("{:?}", room_info));
+                        // console_log!(format!("{:?}", room_info));
                         let room_info_json = serde_json::to_string(&room_info).unwrap();
 
                         let resp = Request::post("http://127.0.0.1:8000/create-room")
