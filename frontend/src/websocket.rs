@@ -12,16 +12,19 @@ use weblog::{console_error, console_log, console_warn};
 use yew::prelude::*;
 use yew::NodeRef;
 
-use crate::reducers::{CurrentRoomMessageAction, CurrentRoomMessageState};
+use crate::reducers::{
+    CurrentRoomAction, CurrentRoomMessageAction, CurrentRoomMessageState, CurrentRoomState,
+};
 use crate::{Message, User};
 
 // ############################# Websocket commands for Server ########################### //
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum WebsocketServerCommand {
-    UserSetUp,   // When websocket first connected, this command will execute.
-    ChangeRoom,  // When the user clicks on a room, this command will execute.
-    SendMessage, // When the user sends a message(clicks the send button), this command will execute
+    UserSetUp,       // When websocket first connected, this command will execute.
+    ChangeRoom,      // When the user clicks on a room, this command will execute.
+    SendMessage, // When the user sends a message(clicks the send button), this command will execute.
+    SendJoinRequest, // When the user sends a join request, this command will execute.
 }
 
 // ############################# Websocket commands for client ########################### //
@@ -29,6 +32,7 @@ pub enum WebsocketServerCommand {
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum WebsocketClientCommand {
     AddMessage,
+    ShowJoinRequest,
 }
 
 // Info for changing `UserSetUp` command
@@ -64,12 +68,35 @@ pub struct MessageInfoForClient {
     pub user_id: i32,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserAndRoomIDForServer {
+    pub command_type: WebsocketServerCommand,
+    pub room_id: i32,
+    pub user_id: i32,
+    pub nickname: String,
+    pub username: String,
+    pub img_url: String,
+    pub password: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserAndRoomIDForClient {
+    pub command_type: WebsocketClientCommand,
+    pub room_id: i32,
+    pub user_id: i32,
+    pub nickname: String,
+    pub username: String,
+    pub img_url: String,
+    pub password: String,
+}
+
 // ************************************************************************* //
 // ############### When Websocket sends message to the client ################# //
 // ************************************************************************* //
 pub fn ws_onmessage(
     ws: WebSocket,
     current_room_messages: UseReducerHandle<CurrentRoomMessageState>,
+    current_room_details: UseReducerHandle<CurrentRoomState>,
 ) {
     let onmessage_callback = Closure::wrap(Box::new(move |e: MessageEvent| {
         if let Ok(text) = e.data().dyn_into::<js_sys::JsString>() {
@@ -77,24 +104,32 @@ pub fn ws_onmessage(
             if let Some(text) = text.as_string() {
                 console_log!("message event, received Text: {:?}", text.clone());
 
-                if let Ok(message) = serde_json::from_str::<MessageInfoForClient>(&text) {
+                if let Ok(command) = serde_json::from_str::<MessageInfoForClient>(&text) {
                     // AddMessage command
-                    if message.command_type == WebsocketClientCommand::AddMessage {
+                    if command.command_type == WebsocketClientCommand::AddMessage {
                         // Set the new message in the message state;
                         current_room_messages.dispatch(CurrentRoomMessageAction::AddMessage(
                             Message {
-                                id: message.id,
-                                msg: message.msg,
-                                room_id: message.room_id,
-                                user_id: message.user_id,
+                                id: command.id,
+                                msg: command.msg,
+                                room_id: command.room_id,
+                                user_id: command.user_id,
                             },
                         ));
-                        console_log!("Server is trying to send a command `AddMessage`");
                     }
-                    console_log!("Server is trying to send data `MessageInfoForClient`")
                 }
-            } else {
-                console_error!("websocket message recieved was not a string!");
+                if let Ok(command) = serde_json::from_str::<UserAndRoomIDForClient>(&text) {
+                    if command.command_type == WebsocketClientCommand::ShowJoinRequest {
+                        // Add a new user on the CurrentRoomState.current_room_join_requests
+                        current_room_details.dispatch(CurrentRoomAction::AppendJoinRequest(User {
+                            id: command.user_id,
+                            img_url: command.img_url,
+                            username: command.username,
+                            password: command.password,
+                            nickname: command.nickname,
+                        }));
+                    }
+                }
             }
         } else {
             console_error!("message event, received Unknown: {:?}", e.data());

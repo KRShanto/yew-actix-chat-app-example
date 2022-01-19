@@ -106,6 +106,7 @@ fn app() -> Html {
         let ws = ws.clone();
         let user_details = user_details.clone();
         let current_room_messages = current_room_messages.clone();
+        let current_room_details = current_room_details.clone();
 
         use_effect_with_deps(
             move |ws| {
@@ -114,7 +115,11 @@ fn app() -> Html {
                 if let Some(_) = (*ws).clone() {
                     ws_opopen((*ws).clone().unwrap(), user_details.clone());
                     ws_onerror((*ws).clone().unwrap());
-                    ws_onmessage((*ws).clone().unwrap(), current_room_messages);
+                    ws_onmessage(
+                        (*ws).clone().unwrap(),
+                        current_room_messages,
+                        current_room_details,
+                    );
                     ws_onclose((*ws).clone().unwrap());
                 }
 

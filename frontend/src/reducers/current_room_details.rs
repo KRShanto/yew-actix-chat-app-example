@@ -8,6 +8,7 @@ pub enum CurrentRoomAction {
     SelectRoom(Room),
     PutUsers(Vec<User>),
     PutJoinRequests(Vec<User>),
+    AppendJoinRequest(User),
 }
 // You should change this when user is clicking on the chat bar's room;
 // Use a use_effect hook when this state changes
@@ -56,6 +57,29 @@ impl Reducible for CurrentRoomState {
                 current_room_join_requests: Some(users),
             }
             .into(),
+            CurrentRoomAction::AppendJoinRequest(user) => {
+                if let Some(current_room_join_requests) = self.current_room_join_requests.clone() {
+                    let mut new_users: Vec<User> = Vec::new();
+                    for user in current_room_join_requests.clone() {
+                        new_users.push(user);
+                    }
+                    new_users.push(user);
+
+                    Self {
+                        current_room: self.current_room.clone(),
+                        current_room_join_requests: Some(new_users),
+                        current_room_users: self.current_room_users.clone(),
+                    }
+                    .into()
+                } else {
+                    Self {
+                        current_room: self.current_room.clone(),
+                        current_room_join_requests: self.current_room_join_requests.clone(),
+                        current_room_users: self.current_room_users.clone(),
+                    }
+                    .into()
+                }
+            }
         }
     }
 }

@@ -1,10 +1,11 @@
 use reqwasm::http::Request;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
-use web_sys::HtmlInputElement;
+use web_sys::{HtmlInputElement, WebSocket};
 use weblog::console_log;
 use yew::prelude::*;
 
+use crate::websocket::{UserAndRoomIDForServer, WebsocketServerCommand};
 use crate::User;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -17,6 +18,8 @@ struct JoinRoomInfo {
 pub fn join_room() -> Html {
     let user_details: User = use_context().unwrap();
     let input_ref = NodeRef::default();
+    let ws = use_context::<UseStateHandle<Option<WebSocket>>>()
+        .expect("No context provided!!!. A context should be provided with `UseStateHandle<Option<WebSocket>>`");
 
     html! {
         <>
@@ -34,6 +37,7 @@ pub fn join_room() -> Html {
                     .unwrap();
 
                 let details = serde_json::to_string(&JoinRoomInfo { user_id, room_id }).unwrap();
+                let ws = ws.clone();
 
                 // Sending the request to the server
                 spawn_local(async move {
@@ -46,7 +50,21 @@ pub fn join_room() -> Html {
 
                     // TODO: I will show an Alert message if the response return 204 http status;
                     console_log!(format!("{:?}", resp));
+
+
                 });
+                // Send a command to websocket;
+                if let Some(ws) = (*ws).clone() {
+                    ws.send_with_str(&serde_json::to_string(&UserAndRoomIDForServer {
+                        command_type: WebsocketServerCommand::SendJoinRequest,
+                        img_url: user_details.img_url.clone(),
+                        username: user_details.username.clone(),
+                        nickname: user_details.nickname.clone(),
+                        password: user_details.password.clone(),
+                        user_id: user_details.id.clone(),
+                        room_id: room_id.clone()
+                    } ).unwrap());
+                }
 
             }}>{"Send Request"}</button>
         </>

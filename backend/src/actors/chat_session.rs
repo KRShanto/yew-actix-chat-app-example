@@ -20,11 +20,13 @@ enum WebsocketServerCommand {
     UserSetUp,
     ChangeRoom,
     SendMessage,
+    SendJoinRequest,
 }
 // A command sends to client from server. server -> client
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 enum WebsocketClientCommand {
     AddMessage,
+    ShowJoinRequest,
 }
 
 // `UserSetUp` commmand
@@ -40,6 +42,28 @@ struct UserID {
 struct RoomID {
     command_type: WebsocketServerCommand,
     room_id: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct UserAndRoomIDForServer {
+    command_type: WebsocketServerCommand,
+    room_id: i32,
+    user_id: i32,
+    nickname: String,
+    username: String,
+    img_url: String,
+    password: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct UserAndRoomIDForClient {
+    command_type: WebsocketClientCommand,
+    room_id: i32,
+    user_id: i32,
+    nickname: String,
+    username: String,
+    password: String,
+    img_url: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -168,7 +192,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ChatSession {
                         println!("{}", "Command executed for changing room".green());
                     }
                 }
-                // *************** Message Sending and Creating command *************** //
+                // *************** Message Sending and Message Creating command *************** //
                 if let Ok(command) = serde_json::from_str::<MessageInfoForServer>(&text) {
                     if command.command_type == WebsocketServerCommand::SendMessage {
                         // Create new message
@@ -205,6 +229,31 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ChatSession {
                                     .bold()
                             );
                         }
+                    }
+                }
+                // *************** Room Join Request command *************** //
+                if let Ok(command) = serde_json::from_str::<UserAndRoomIDForServer>(&text) {
+                    if command.command_type == WebsocketServerCommand::SendJoinRequest {
+                        // Send `ShowJoinRequest` comamnd to client;
+                        self.server.do_send(ClientSendMessage {
+                            current_room_id: command.room_id,
+                            message: serde_json::to_string(&UserAndRoomIDForClient {
+                                room_id: command.room_id,
+                                command_type: WebsocketClientCommand::ShowJoinRequest,
+                                img_url: command.img_url,
+                                nickname: command.nickname,
+                                username: command.username,
+                                user_id: command.user_id,
+                                password: command.password,
+                            })
+                            .unwrap(),
+                        });
+                        println!(
+                            "{}",
+                            "Command executed Sending and showing join requests"
+                                .green()
+                                .bold()
+                        );
                     }
                 }
 
