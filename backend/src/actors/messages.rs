@@ -2,10 +2,18 @@ use actix::prelude::*;
 
 // TODO: I will write better comments later;
 
+#[derive(PartialEq, Clone)]
+pub enum SendType {
+    Singular, // send only specific client
+    Plural,   // send all clients
+}
+
 // The Message for sending messages to clients
 #[derive(Message)]
 #[rtype(result = "()")]
 pub struct SendMessage {
+    pub send_type: SendType,
+    pub user_id: i32,
     pub message: String,
     pub current_room_id: i32, // actor's current room
 }
@@ -21,6 +29,8 @@ pub struct Join {
 #[derive(Message)]
 #[rtype(result = "()")]
 pub struct ClientSendMessage {
+    pub send_type: SendType,
+    pub user_id: i32,
     pub message: String,
     pub current_room_id: i32,
 }

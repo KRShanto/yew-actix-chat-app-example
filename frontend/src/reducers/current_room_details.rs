@@ -103,6 +103,7 @@ impl Reducible for CurrentRoomState {
                     self.default().into()
                 }
             }
+
             _ => self.default().into(),
         }
     }

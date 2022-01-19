@@ -192,3 +192,25 @@ pub fn get_all_users_from_a_room(
     }
     list_of_users
 }
+
+// ************************************************************************* //
+// ######################  Get room from id  ####################### //
+// ************************************************************************* //
+pub fn get_room_from_id(argu_room_id: i32, connection: &PgConnection) -> Result<Room, ()> {
+    use crate::schema::rooms::dsl::*;
+
+    match rooms.find(argu_room_id).first(connection) {
+        Ok(room) => Ok(room),
+        Err(error) => {
+            println!(
+                "{}",
+                format!(
+                    "{} {}",
+                    format!("{}", "Error occur when finding the Room: ".red()),
+                    error
+                )
+            );
+            Err(())
+        }
+    }
+}

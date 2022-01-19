@@ -14,8 +14,9 @@ use yew::NodeRef;
 
 use crate::reducers::{
     CurrentRoomAction, CurrentRoomMessageAction, CurrentRoomMessageState, CurrentRoomState,
+    RoomListAction, RoomListState,
 };
-use crate::{Message, User};
+use crate::{Message, Room, User};
 
 // ############################# Websocket commands for Server ########################### //
 
@@ -63,6 +64,14 @@ pub struct UserIDandRoomIDforServer {
     pub command_type: WebsocketServerCommand,
     pub room_id: i32,
     pub user_id: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct RoomInfo {
+    command_type: WebsocketClientCommand,
+    room_id: i32,
+    nickname: String,
+    img_url: String,
 }
 
 // Send chat messages to server; client -> server
@@ -113,6 +122,7 @@ pub fn ws_onmessage(
     ws: WebSocket,
     current_room_messages: UseReducerHandle<CurrentRoomMessageState>,
     current_room_details: UseReducerHandle<CurrentRoomState>,
+    room_list: yew::UseReducerHandle<RoomListState>,
 ) {
     let onmessage_callback = Closure::wrap(Box::new(move |e: MessageEvent| {
         if let Ok(text) = e.data().dyn_into::<js_sys::JsString>() {
@@ -150,6 +160,15 @@ pub fn ws_onmessage(
                     if command.command_type == WebsocketClientCommand::RemoveRequest {
                         current_room_details
                             .dispatch(CurrentRoomAction::RemoveJoinRequest(command.user_id))
+                    }
+                }
+                if let Ok(command) = serde_json::from_str::<RoomInfo>(&text) {
+                    if command.command_type == WebsocketClientCommand::AppendRoom {
+                        room_list.dispatch(RoomListAction::AddRoom(Room {
+                            id: command.room_id,
+                            img_url: command.img_url,
+                            nickname: command.nickname,
+                        }))
                     }
                 }
             }

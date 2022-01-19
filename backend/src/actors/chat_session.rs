@@ -1,8 +1,15 @@
 // #![allow(dead_code, unused)]
 
 use crate::{
-    actors::{ChatServer, ClientSendMessage, Join, SendMessage},
-    db::{add_user_into_room, create_message, delete_user_from_room, establish_connection},
+    actors::{
+        ChatServer, ClientSendMessage, ClientSendOneMessage, Join, SendMessage, SendOneMessage,
+        SendType,
+    },
+    db::{
+        add_user_into_room, create_message, delete_user_from_room, establish_connection,
+        get_room_from_id,
+    },
+    models::Room,
 };
 
 use actix::prelude::*;
@@ -83,6 +90,15 @@ struct UserAndRoomIDForClient {
     img_url: String,
 }
 
+// This is for client
+#[derive(Debug, Serialize, Deserialize)]
+struct RoomInfo {
+    command_type: WebsocketClientCommand,
+    room_id: i32,
+    nickname: String,
+    img_url: String,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 struct MessageInfoForServer {
     // This will come from the client;
@@ -103,7 +119,11 @@ struct MessageInfoForClient {
 }
 
 fn room_not_found_error() -> String {
-    format!("{}", "Developer Error: Looks like you forgot to execute the command `ChangeRoom`. No room found in this actor. Consider sending this command when user has clicked a chatroom".red())
+    format!("{}", "Developer Error: Looks like you forgot to execute the command `ChangeRoom`. No room found in this actor. Consider sending this command when user has clicked a chatroom".red().bold().italic())
+}
+
+fn user_not_found_error() -> String {
+    format!("{}", "Developer Error: Looks like you forgot to execute the command `UserSetUp`!!! No user found in this actor. Consider sending this command when the page is loaded, check if the user logged in and then send this command")
 }
 
 // Actor for each reqeust/client. This actor will responsible for taking client's messages and pass them in the server `ChatServer`. And then `ChatServer` will pass that message to other Actors or will do something else
@@ -161,11 +181,19 @@ impl Handler<SendMessage> for ChatSession {
 
     fn handle(&mut self, msg: SendMessage, ctx: &mut Self::Context) {
         // Sending message to client/browser
-        if let Some(room_id) = self.current_room_id {
-            println!("{}", "Sending message to client/browser".green().bold());
+        if msg.send_type == SendType::Plural {
+            if let Some(room_id) = self.current_room_id {
+                println!("{}", "Sending message to client/browser".green().bold());
 
-            if msg.current_room_id == room_id {
-                ctx.text(msg.message)
+                if msg.current_room_id == room_id {
+                    ctx.text(msg.message)
+                }
+            }
+        } else if msg.send_type == SendType::Singular {
+            if let Some(user_id) = self.user_id {
+                if msg.user_id == user_id {
+                    ctx.text(msg.message)
+                }
             }
         }
     }
@@ -220,6 +248,8 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ChatSession {
                         {
                             // Send AddMessage command to the client;
                             self.server.do_send(ClientSendMessage {
+                                send_type: SendType::Plural,
+                                user_id: self.user_id.expect(&user_not_found_error()),
                                 current_room_id: self
                                     .current_room_id
                                     .expect(&room_not_found_error()),
@@ -253,6 +283,8 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ChatSession {
                     if command.command_type == WebsocketServerCommand::SendJoinRequest {
                         // Send `ShowJoinRequest` comamnd to client;
                         self.server.do_send(ClientSendMessage {
+                            send_type: SendType::Plural,
+                            user_id: self.user_id.expect(&user_not_found_error()),
                             current_room_id: command.room_id,
                             message: serde_json::to_string(&UserAndRoomIDForClient {
                                 room_id: command.room_id,
@@ -303,6 +335,26 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ChatSession {
                             })
                             .unwrap(),
                             current_room_id: command.room_id,
+                            send_type: SendType::Plural,
+                            user_id: self.user_id.expect(&user_not_found_error()),
+                        });
+
+                        // getting the room details:
+                        let room: Room =
+                            get_room_from_id(command.room_id, &establish_connection()).unwrap();
+
+                        // send the command `AppendRoom` so that the request's user's room can get updated;
+                        self.server.do_send(ClientSendMessage {
+                            message: serde_json::to_string(&RoomInfo {
+                                command_type: WebsocketClientCommand::AppendRoom,
+                                img_url: room.img_url,
+                                room_id: room.id,
+                                nickname: room.nickname,
+                            })
+                            .unwrap(),
+                            current_room_id: command.room_id,
+                            user_id: command.user_id,
+                            send_type: SendType::Singular,
                         });
 
                         println!(
