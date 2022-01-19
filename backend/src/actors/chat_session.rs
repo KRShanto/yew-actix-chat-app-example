@@ -1,10 +1,7 @@
 // #![allow(dead_code, unused)]
 
 use crate::{
-    actors::{
-        ChatServer, ClientSendMessage, ClientSendOneMessage, Join, SendMessage, SendOneMessage,
-        SendType,
-    },
+    actors::{ChatServer, ClientSendMessage, Join, SendMessage, SendType},
     db::{
         add_user_into_room, create_message, delete_user_from_room, establish_connection,
         get_room_from_id,

@@ -34,20 +34,3 @@ pub struct ClientSendMessage {
     pub message: String,
     pub current_room_id: i32,
 }
-
-// The message to send only a perticular client.
-// ChatSession -> ChatServer
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct ClientSendOneMessage {
-    pub message: String,
-    pub user_id: i32,
-}
-// The message to send only a perticular client.
-// ChatServer -> ChatSession
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct SendOneMessage {
-    pub message: String,
-    pub user_id: i32,
-}
