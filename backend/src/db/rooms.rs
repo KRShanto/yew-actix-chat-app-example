@@ -129,7 +129,11 @@ pub fn is_room_present(room_id: i32, connection: &PgConnection) -> Result<bool, 
 // ************************************************************************* //
 // ######################  Get all User from a Room  ####################### //
 // ************************************************************************* //
-pub fn get_all_users_from_a_room(argu_room_id: i32, connection: &PgConnection) -> Vec<User> {
+pub fn get_all_users_from_a_room(
+    argu_room_id: i32,
+    argu_accepted: bool,
+    connection: &PgConnection,
+) -> Vec<User> {
     // You need to validate the the room;
     use crate::schema::rooms_users::dsl::*;
     use crate::schema::users::dsl::id as user_id;
@@ -138,6 +142,7 @@ pub fn get_all_users_from_a_room(argu_room_id: i32, connection: &PgConnection) -
     // get all rooms_users where room_id = argu_room_id
     let room_users: Vec<RoomsUser> = rooms_users
         .filter(room_id.eq(argu_room_id))
+        .filter(accepted.eq(argu_accepted))
         .load(connection)
         .unwrap();
 

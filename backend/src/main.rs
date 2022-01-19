@@ -12,7 +12,7 @@ use backend::{
     db::establish_connection,
     route_functions::{
         get_a_user, get_messages, get_rooms, get_users_from_room, make_join_request, room_create,
-        save_file, signup, ws_index,
+        save_file, show_join_requests, signup, ws_index,
     },
 };
 
@@ -62,6 +62,7 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::resource("/get-users-from-room").route(web::post().to(get_users_from_room)),
             )
+            .service(web::resource("/get-join-requests").route(web::post().to(show_join_requests)))
     })
     .bind("127.0.0.1:8000")
     .unwrap()

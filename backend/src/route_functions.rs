@@ -342,6 +342,25 @@ pub async fn get_users_from_room(room_info: Json<RoomID>) -> HttpResponse {
     );
     HttpResponse::Ok().json(get_all_users_from_a_room(
         room_info.room_id,
+        true,
+        &establish_connection(),
+    ))
+}
+
+// ************************************************************************* //
+// ########################### Get Join Requests for a room ################################ //
+// ************************************************************************* //
+pub async fn show_join_requests(room_info: Json<RoomID>) -> HttpResponse {
+    println!(
+        "{}",
+        "A request has come for getting join requests for a room"
+            .blue()
+            .bold()
+    );
+
+    HttpResponse::Ok().json(get_all_users_from_a_room(
+        room_info.room_id,
+        false,
         &establish_connection(),
     ))
 }

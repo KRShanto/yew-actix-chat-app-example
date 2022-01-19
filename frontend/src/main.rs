@@ -12,7 +12,9 @@ pub mod components;
 pub mod reducers;
 pub mod websocket;
 
-use components::{ChatBar, CreateRoom, JoinRoom, Login, MessageBar, ShowRooms, Signup};
+use components::{
+    ChatBar, CreateRoom, JoinRequest, JoinRoom, Login, MessageBar, ShowRooms, Signup,
+};
 use reducers::{
     CurrentRoomAction, CurrentRoomMessageAction, CurrentRoomMessageState, CurrentRoomState,
     RoomListState,
@@ -122,7 +124,7 @@ fn app() -> Html {
         );
     }
     {
-        // When a room changes, Change the message state
+        // When a room changes, Change the messages of that room;
         let current_room_messages = current_room_messages.clone();
 
         use_effect_with_deps(
@@ -137,23 +139,22 @@ fn app() -> Html {
                     // json data of `user_room_info`
                     let user_room_info_json = serde_json::to_string(&user_room_info).unwrap();
 
-                    {
-                        spawn_local(async move {
-                            let resp = Request::post("http://127.0.0.1:8000/get-messages")
-                                .header("Content-Type", "application/json")
-                                .body(user_room_info_json)
-                                .send()
-                                .await
-                                .unwrap();
+                    // {
+                    spawn_local(async move {
+                        let resp = Request::post("http://127.0.0.1:8000/get-messages")
+                            .header("Content-Type", "application/json")
+                            .body(user_room_info_json)
+                            .send()
+                            .await
+                            .unwrap();
 
-                            // getting messages from the response
-                            let response_messages = resp.json::<Vec<Message>>().await.unwrap();
+                        // getting messages from the response
+                        let response_messages = resp.json::<Vec<Message>>().await.unwrap();
 
-                            current_room_messages.dispatch(
-                                CurrentRoomMessageAction::ResetMessages(response_messages),
-                            );
-                        });
-                    }
+                        current_room_messages
+                            .dispatch(CurrentRoomMessageAction::ResetMessages(response_messages));
+                    });
+                    // }
                 }
 
                 || ()
@@ -197,6 +198,40 @@ fn app() -> Html {
             current_room_details.clone(), // dependents
         );
     }
+    {
+        // When a room changes, change refetch the join reqeusts;
+        let current_room_details = current_room_details.clone();
+        use_effect_with_deps(
+            move |current_room_details| {
+                if let Some(room) = current_room_details.current_room.clone() {
+                    // info for making post request on `get-join-requests` route
+                    let room_info = RoomID { room_id: room.id };
+
+                    // json data of `user_room_info`
+                    let room_info_json = serde_json::to_string(&room_info).unwrap();
+
+                    let current_room_details = current_room_details.clone();
+                    spawn_local(async move {
+                        let resp = Request::post("http://127.0.0.1:8000/get-join-requests")
+                            .header("Content-Type", "application/json")
+                            .body(room_info_json)
+                            .send()
+                            .await
+                            .unwrap();
+
+                        // getting messages from the response
+                        let response_messages = resp.json::<Vec<User>>().await.unwrap();
+
+                        current_room_details
+                            .dispatch(CurrentRoomAction::PutJoinRequests(response_messages));
+                    });
+                }
+
+                || ()
+            },
+            current_room_details,
+        );
+    }
 
     let ws = ws.clone();
 
@@ -219,6 +254,7 @@ fn app() -> Html {
                 <ShowRooms/>
                 <ChatBar />
                 <MessageBar />
+                <JoinRequest />
                 <Temporary />
 
             </ ContextProvider <User> >

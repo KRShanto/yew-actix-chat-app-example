@@ -7,6 +7,7 @@ use crate::{Room, User};
 pub enum CurrentRoomAction {
     SelectRoom(Room),
     PutUsers(Vec<User>),
+    PutJoinRequests(Vec<User>),
 }
 // You should change this when user is clicking on the chat bar's room;
 // Use a use_effect hook when this state changes
@@ -14,6 +15,7 @@ pub enum CurrentRoomAction {
 pub struct CurrentRoomState {
     pub current_room: Option<Room>,
     pub current_room_users: Option<HashMap<i32, User>>,
+    pub current_room_join_requests: Option<Vec<User>>,
 }
 
 impl CurrentRoomState {
@@ -21,6 +23,7 @@ impl CurrentRoomState {
         Self {
             current_room: None,
             current_room_users: None,
+            current_room_join_requests: None,
         }
     }
 }
@@ -32,6 +35,7 @@ impl Reducible for CurrentRoomState {
             CurrentRoomAction::SelectRoom(room) => Self {
                 current_room_users: None,
                 current_room: Some(room),
+                current_room_join_requests: None,
             }
             .into(),
             CurrentRoomAction::PutUsers(users) => {
@@ -42,9 +46,16 @@ impl Reducible for CurrentRoomState {
                 Self {
                     current_room: self.current_room.clone(),
                     current_room_users: Some(new_users_list),
+                    current_room_join_requests: self.current_room_join_requests.clone(),
                 }
                 .into()
             }
+            CurrentRoomAction::PutJoinRequests(users) => Self {
+                current_room_users: self.current_room_users.clone(),
+                current_room: self.current_room.clone(),
+                current_room_join_requests: Some(users),
+            }
+            .into(),
         }
     }
 }
