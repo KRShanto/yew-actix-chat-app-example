@@ -6,9 +6,10 @@ use crate::{Room, User};
 
 pub enum CurrentRoomAction {
     SelectRoom(Room),
-    PutUsers(Vec<User>),
-    PutJoinRequests(Vec<User>),
-    AppendJoinRequest(User),
+    PutUsers(Vec<User>),        // reset users list
+    PutJoinRequests(Vec<User>), // reset the join requests
+    AppendJoinRequest(User),    // add new join requests inside existing join requests
+    RemoveJoinRequest(i32),     // remove a join request from the join requests list
 }
 // You should change this when user is clicking on the chat bar's room;
 // Use a use_effect hook when this state changes
@@ -27,7 +28,15 @@ impl CurrentRoomState {
             current_room_join_requests: None,
         }
     }
+    fn default(&self) -> Self {
+        Self {
+            current_room: self.current_room.clone(),
+            current_room_users: self.current_room_users.clone(),
+            current_room_join_requests: self.current_room_join_requests.clone(),
+        }
+    }
 }
+
 impl Reducible for CurrentRoomState {
     type Action = CurrentRoomAction;
 
@@ -72,14 +81,29 @@ impl Reducible for CurrentRoomState {
                     }
                     .into()
                 } else {
+                    self.default().into()
+                }
+            }
+            CurrentRoomAction::RemoveJoinRequest(user_id) => {
+                // remove the user from the join requests list
+                if let Some(current_room_join_requests) = self.current_room_join_requests.clone() {
+                    let new_join_request_list: Vec<User> = current_room_join_requests
+                        .clone()
+                        .into_iter()
+                        .filter(|u| u.id != user_id)
+                        .collect();
+
                     Self {
                         current_room: self.current_room.clone(),
-                        current_room_join_requests: self.current_room_join_requests.clone(),
+                        current_room_join_requests: Some(new_join_request_list),
                         current_room_users: self.current_room_users.clone(),
                     }
                     .into()
+                } else {
+                    self.default().into()
                 }
             }
+            _ => self.default().into(),
         }
     }
 }

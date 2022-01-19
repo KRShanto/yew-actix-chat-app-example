@@ -67,6 +67,39 @@ pub fn add_user_into_room(
 }
 
 // ************************************************************************* //
+// ########################### Delete User from a Room ########################## //
+// ************************************************************************* //
+pub fn delete_user_from_room(
+    argu_user_id: i32,
+    argu_room_id: i32,
+    connection: &PgConnection,
+) -> Result<(), ()> {
+    use crate::schema::rooms_users::dsl::*;
+
+    match diesel::delete(
+        rooms_users
+            .filter(user_id.eq(&argu_user_id))
+            .filter(room_id.eq(&argu_room_id)),
+    )
+    .execute(connection)
+    {
+        Ok(_) => Ok(()),
+        Err(error) => {
+            println!(
+                "{}",
+                format!(
+                    "{} {}",
+                    format!("{}", "Error occur when finding the User: ".red()),
+                    error
+                )
+            );
+
+            Err(())
+        }
+    }
+}
+
+// ************************************************************************* //
 // ######################  Get all rooms for a User  ####################### //
 // ************************************************************************* //
 pub fn get_all_rooms_for_a_user(argu_user_id: i32, connection: PgConnection) -> Vec<Room> {

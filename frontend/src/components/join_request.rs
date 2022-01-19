@@ -4,6 +4,7 @@ use weblog::console_log;
 use yew::prelude::*;
 
 use crate::reducers::CurrentRoomState;
+use crate::websocket::{UserIDandRoomIDforServer, WebsocketServerCommand};
 use crate::User;
 
 #[function_component(JoinRequest)]
@@ -26,9 +27,25 @@ pub fn joinrequest() -> Html {
 
             <ol>
             {
-                users.iter().map(|user| {
+                users.into_iter().map(|user| {
+                    let ws = ws.clone();
+                    let current_room_details = current_room_details.clone();
                     html! {
-                        <li>{user.nickname.clone()}</li>
+                        <>
+                            <li>{user.nickname.clone()}</li>
+                            <button onclick={ move |_| {
+
+                                if let Some(ws) = (*ws).clone() {
+                                    ws.send_with_str(&serde_json::to_string(&UserIDandRoomIDforServer {
+                                        command_type: WebsocketServerCommand::AcceptJoinRequest,
+                                        user_id: user.id,
+                                        room_id: current_room_details.clone().current_room.clone().unwrap().id
+                                    }).unwrap());
+                                 }
+
+                             }}>{"Accept"}</button>
+                            <button>{"Reject"}</button>
+                        </>
                     }
                 }).collect::<Html>()
             }

@@ -61,7 +61,7 @@ pub struct ListOfRoom {
 
 // *************** User and Room id ***************** //
 #[derive(Debug, Serialize, Deserialize)]
-pub struct UserAndRoomID {
+pub struct UserIDandRoomID {
     user_id: i32, // user's id
     room_id: i32, // room's id
 }
@@ -218,7 +218,7 @@ pub async fn room_create(room_info: Json<RoomInfo>) -> impl Responder {
 // ************************************************************************* //
 // ##################### Make Join request to a Room ####################### //
 // ************************************************************************* //
-pub async fn make_join_request(info: Json<UserAndRoomID>) -> impl Responder {
+pub async fn make_join_request(info: Json<UserIDandRoomID>) -> impl Responder {
     // check if the room is valid or not
     // TODO: If any user already joined to that room or have request pending to that room, then he/she will get a message. I will make that restriction later.
     if let Ok(value) = is_room_present(info.room_id, &establish_connection()) {

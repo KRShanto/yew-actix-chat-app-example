@@ -20,7 +20,7 @@ impl Reducible for RoomListState {
     type Action = RoomListAction;
 
     fn reduce(self: Rc<Self>, action: Self::Action) -> Rc<Self> {
-        let new_room_list = match action {
+        let new_room_list: Vec<Room> = match action {
             RoomListAction::AddRoom(room) => {
                 let mut new_room: Vec<Room> = Vec::new();
                 for room in self.rooms.clone() {
@@ -30,8 +30,15 @@ impl Reducible for RoomListState {
 
                 new_room
             }
-            RoomListAction::RemoveRoom(room) => {
-                vec![room]
+            RoomListAction::RemoveRoom(room_to_remove) => {
+                let new_rooms: Vec<Room> = self
+                    .rooms
+                    .clone()
+                    .into_iter()
+                    .filter(|room| room.id != room_to_remove.id)
+                    .collect();
+
+                new_rooms
                 // TODO: Currently I am not removing any room. Later on I will.
             }
         };

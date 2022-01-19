@@ -2,7 +2,7 @@
 
 use crate::{
     actors::{ChatServer, ClientSendMessage, Join, SendMessage},
-    db::create_message,
+    db::{add_user_into_room, create_message, delete_user_from_room, establish_connection},
 };
 
 use actix::prelude::*;
@@ -21,12 +21,15 @@ enum WebsocketServerCommand {
     ChangeRoom,
     SendMessage,
     SendJoinRequest,
+    AcceptJoinRequest,
 }
 // A command sends to client from server. server -> client
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 enum WebsocketClientCommand {
     AddMessage,
     ShowJoinRequest,
+    AppendRoom,
+    RemoveRequest, // This will remove the list of join requests. Not reject the request. This command should execute when a request is accepted
 }
 
 // `UserSetUp` commmand
@@ -42,6 +45,20 @@ struct UserID {
 struct RoomID {
     command_type: WebsocketServerCommand,
     room_id: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct UserIDandRoomIDforServer {
+    command_type: WebsocketServerCommand,
+    room_id: i32,
+    user_id: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct UserIDandRoomIDforClient {
+    command_type: WebsocketClientCommand,
+    room_id: i32,
+    user_id: i32,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -253,6 +270,44 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ChatSession {
                             "Command executed Sending and showing join requests"
                                 .green()
                                 .bold()
+                        );
+                    }
+                }
+                // *************** Accept Room Join Request command *************** //
+                if let Ok(command) = serde_json::from_str::<UserIDandRoomIDforServer>(&text) {
+                    if command.command_type == WebsocketServerCommand::AcceptJoinRequest {
+                        // Create a new `rooms_users` column with the `accepted` = true; and delete the old one;
+                        // Delete the old rooms_users
+                        delete_user_from_room(
+                            command.user_id,
+                            command.room_id,
+                            &establish_connection(),
+                        )
+                        .unwrap();
+
+                        // Create a new one/add that user into that room again with the field `accepted` = true;
+                        add_user_into_room(
+                            command.user_id,
+                            command.room_id,
+                            establish_connection(),
+                            true,
+                        )
+                        .unwrap();
+
+                        // send the command `RemoveRequest` to client to so that the request can removed from all client
+                        self.server.do_send(ClientSendMessage {
+                            message: serde_json::to_string(&UserIDandRoomIDforClient {
+                                command_type: WebsocketClientCommand::RemoveRequest,
+                                user_id: command.user_id,
+                                room_id: command.room_id,
+                            })
+                            .unwrap(),
+                            current_room_id: command.room_id,
+                        });
+
+                        println!(
+                            "{}",
+                            "Command executed For accepting join request".green().bold()
                         );
                     }
                 }

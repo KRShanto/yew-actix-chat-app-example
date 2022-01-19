@@ -25,6 +25,7 @@ pub enum WebsocketServerCommand {
     ChangeRoom,      // When the user clicks on a room, this command will execute.
     SendMessage, // When the user sends a message(clicks the send button), this command will execute.
     SendJoinRequest, // When the user sends a join request, this command will execute.
+    AcceptJoinRequest,
 }
 
 // ############################# Websocket commands for client ########################### //
@@ -33,6 +34,8 @@ pub enum WebsocketServerCommand {
 pub enum WebsocketClientCommand {
     AddMessage,
     ShowJoinRequest,
+    AppendRoom,
+    RemoveRequest, // This will remove the list of join requests. Not reject the request. This command should execute when a request is accepted
 }
 
 // Info for changing `UserSetUp` command
@@ -47,6 +50,19 @@ struct WsUserID {
 pub struct WsRoomID {
     pub command_type: WebsocketServerCommand,
     pub room_id: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserIDandRoomIDforClient {
+    pub command_type: WebsocketClientCommand,
+    pub room_id: i32,
+    pub user_id: i32,
+}
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserIDandRoomIDforServer {
+    pub command_type: WebsocketServerCommand,
+    pub room_id: i32,
+    pub user_id: i32,
 }
 
 // Send chat messages to server; client -> server
@@ -128,6 +144,12 @@ pub fn ws_onmessage(
                             password: command.password,
                             nickname: command.nickname,
                         }));
+                    }
+                }
+                if let Ok(command) = serde_json::from_str::<UserIDandRoomIDforClient>(&text) {
+                    if command.command_type == WebsocketClientCommand::RemoveRequest {
+                        current_room_details
+                            .dispatch(CurrentRoomAction::RemoveJoinRequest(command.user_id))
                     }
                 }
             }
