@@ -12,14 +12,9 @@ use web_sys::{Element, HtmlDivElement, HtmlElement, HtmlInputElement};
 use weblog::{console_log, console_warn};
 use yew::prelude::*;
 
-pub mod components;
 pub mod components2;
 pub mod reducers;
 pub mod websocket;
-
-// use components::{
-//     ChatBar, CreateRoom, JoinRequest, JoinRoom, Login, MessageBar, ShowRooms, Signup,
-// };
 
 use components2::{ChatApp, NavBar};
 
