@@ -1,7 +1,14 @@
+$border: 0.2rem solid red;
+$txtShadow: 0.1rem 0.1rem 0.1rem black;
+
 * {
-    // margin: 0;
-    // padding: 0;
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
+}
+
+html {
+    font-size: 62.5%;
 }
 
 body {
@@ -10,4 +17,522 @@ body {
     height: 100vh;
     background-color: rgb(44, 44, 44);
     color: #fff;
+    // height: 200vh;
+
+}
+
+
+
+header {
+    nav {
+        // border: $border;
+        padding: 1rem 0;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-around;
+        font-size: 2rem;
+        background-color: rgb(31, 30, 30);
+
+
+        .logo {
+            color: yellow;
+            text-shadow: $txtShadow;
+        }
+
+        ul {
+            display: flex;
+
+            li {
+                list-style: none;
+                margin: 0 2rem;
+
+                a {
+                    color: white;
+                    text-decoration: none;
+                }
+            }
+        }
+    }
+
+}
+
+#main-chat-app {
+    // border: $border;
+    $bgColor: rgb(24, 23, 23);
+
+    position: relative;
+    width: 110rem;
+    height: 65rem;
+    margin: 3rem auto;
+    border-radius: 1rem;
+    box-shadow: 0rem 0rem 0.5rem white;
+
+    #chat-header {
+        border-radius: 1rem;
+        position: absolute;
+        width: 100%;
+        background-color: $bgColor;
+        height: 12%;
+        top: 0;
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+        // border-bottom: 0.1rem solid rgb(160, 158, 158);
+        // border: $border;
+
+        #user-details-header {
+            // position: relative;
+
+            .user-image {
+                height: 90%;
+                width: 7rem;
+                margin: 0 1rem;
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+
+                img {
+                    border-radius: 50%;
+                    height: 100%;
+                    width: 100%;
+                }
+            }
+
+            .names {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                margin-left: 12rem;
+                font-size: 1.5rem;
+                // padding: 1rem;
+
+                .username {
+                    color: rgb(190, 189, 189);
+                    font-style: italic;
+                }
+
+            }
+        }
+
+        #more-options {
+            position: absolute;
+            right: 5rem;
+            top: 50%;
+            transform: translateY(-50%);
+
+            button {
+                margin: 2rem;
+                padding: 0.5rem;
+                border-radius: 0.5rem;
+                background: green;
+                color: white;
+                text-shadow: $txtShadow;
+                font-size: 1.5rem;
+                font-weight: bold;
+            }
+        }
+    }
+
+    #chat-body {
+        position: absolute;
+        width: 100%;
+        height: 88%;
+        bottom: 0;
+        // border: 2px solid orange;
+
+        #room-bar {
+            position: absolute;
+            background-color: $bgColor;
+            left: 0;
+            width: 25%;
+            height: 100%;
+            overflow-y: scroll;
+            border-bottom-left-radius: 1rem;
+            padding: 0 1rem;
+
+            border-top: 0.08rem solid rgb(121, 120, 120);
+
+            :hover {
+                background-color: rgb(14, 14, 14);
+                cursor: pointer;
+            }
+
+            .chat-room {
+                position: relative;
+                width: 100%;
+                height: 8rem;
+                // border: 2px solid rgb(0, 255, 119);
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                // justify-content: space-around;
+                // background-color: yellow;
+                z-index: 200;
+
+
+
+
+                .room-image {
+                    position: relative;
+                    width: 30%;
+                    height: 80%;
+
+                    img {
+                        position: relative;
+                        width: 100%;
+                        height: 100%;
+                        border-radius: 50%;
+                    }
+                }
+
+                .names {
+                    margin-left: 2rem;
+                    font-size: 1.5rem;
+
+                    .id {
+                        font-size: italic;
+                        color: rgb(184, 182, 182)
+                    }
+                }
+            }
+        }
+
+        #chat-bar {
+            // border: 1px solid yellow;
+            position: absolute;
+            width: 75%;
+            height: 100%;
+            right: 0;
+
+            #chat-options {
+                height: 10%;
+                width: 100%;
+                // border: $border;
+                background-color: $bgColor;
+                border-bottom: 0.08rem solid rgb(121, 120, 120);
+                position: relative;
+
+                #room-requests {
+                    position: absolute;
+                    right: 4rem;
+                    bottom: 2rem;
+                    // border: $border;
+
+                    .number-of-requests {
+                        position: absolute;
+                        font-size: 2.5rem;
+                        color: rgb(13, 212, 13);
+                        top: -1rem;
+                        left: 0;
+                        font-weight: bold;
+                        text-shadow: $txtShadow;
+
+                    }
+
+                    button {
+                        color: white;
+                        text-shadow: $txtShadow;
+                        background-color: rgb(255, 72, 0);
+                        border-radius: 1rem;
+                        padding: 0.5rem 3rem;
+                        font-weight: bold;
+
+                    }
+
+                }
+
+
+            }
+
+            #message-bar {
+                height: 80%;
+                width: 100%;
+                overflow-y: scroll;
+                padding: 0 2rem;
+
+                .user-message {
+                    // border: 1px solid orange;
+                    display: flex;
+                    flex-direction: row;
+                    margin: 1rem 0;
+                    align-items: center;
+                    position: relative;
+                    // width: 100%;
+
+
+                    img {
+                        margin: 1rem;
+                        // position: absolute;
+                        // padding: 1rem;
+                        width: 4.5rem;
+                        height: 4.5rem;
+                        border-radius: 50%;
+                    }
+
+                    .message-and-nickname {
+                        position: relative;
+                        // width: auto;
+
+                        .nickname {
+                            text-shadow: $txtShadow;
+                            // position: absolute;
+                            font-size: 2rem;
+                        }
+
+                        .message {
+                            // border: 0.2rem solid green;
+                            padding: 1rem;
+                            max-width: 60rem;
+                            // min-width: auto;
+                            // width: auto; 
+                            border-radius: 1rem;
+                            font-size: 1.5rem;
+                            text-shadow: 0.01rem 0.01rem 0.1rem black;
+                            background-color: rgb(57, 120, 223);
+                            word-wrap: break-word;
+                        }
+                    }
+
+                }
+
+                .user-message.other {
+                    .message {
+                        background-color: rgb(12, 38, 187);
+                    }
+                }
+            }
+
+            #chat-input {
+                height: 10%;
+                width: 100%;
+                // border: 0.1rem solid yellowgreen;
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+
+                input {
+                    width: 70%;
+                    height: 70%;
+                    font-size: 2rem;
+                    background-color: rgb(80, 79, 79);
+                    color: rgb(219, 218, 218);
+                    padding: 1rem;
+                    border: none;
+                    border-radius: 1rem;
+                    outline: none;
+
+                }
+
+                button {
+                    padding: 0.5rem 4rem;
+                    font-size: 2rem;
+                    margin: 0 2rem;
+                    border-radius: 1rem;
+                    font-weight: bold;
+                    text-shadow: $txtShadow;
+                    color: white;
+                    background-color: rgb(51, 126, 212);
+                }
+            }
+        }
+
+
+    }
+
+
+
+
+
+    /// This is a common class;
+    .form {
+        position: relative;
+        // border: 3px solid yellow;
+        width: 60rem;
+        padding: 3rem;
+        border-radius: 1rem;
+        font-size: 1.5rem;
+        background-color: rgb(2, 17, 49);
+        box-shadow: 0rem 0rem 0.5rem white;
+
+        .form-title {
+            font-size: 3rem;
+            position: relative;
+            color: rgb(0, 255, 119);
+        }
+
+        .form-wrapper {
+            // border: $border;
+            position: relative;
+            margin: 1.5rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 90%;
+            // border: $border;
+
+            label {
+                font-size: 2rem;
+                font-weight: bold;
+                color: rgb(12, 245, 225);
+                text-shadow: $txtShadow;
+            }
+
+            input {
+                margin: 1rem 0;
+                width: 100%;
+                background-color: transparent;
+                border: none;
+                border-bottom: 0.2rem solid white;
+                outline: none;
+                font-size: 1.8rem;
+                color: white;
+
+            }
+        }
+
+        .buttons-div {
+            display: flex;
+            flex-direction: row;
+            margin: 0 auto;
+            margin-top: 3rem;
+            width: 60%;
+            justify-content: space-between;
+            // border: $border;
+
+
+            button {
+                color: white;
+                font-size: 1.5rem;
+                font-weight: bold;
+                text-shadow: $txtShadow;
+                padding: 0.8rem 4rem;
+                border-radius: 1rem;
+                cursor: pointer;
+            }
+
+            .submit-btn {
+                background-color: rgb(22, 133, 22);
+
+            }
+
+            .cancel-btn {
+                background-color: rgb(236, 26, 26);
+            }
+        }
+    }
+
+    #join-room-requests-main {
+        // border: $border;
+        box-shadow: 0rem 0rem 0.6rem white;
+        width: 70rem;
+        padding: 2rem;
+        border-radius: 1rem;
+        background-color: rgb(15, 15, 15);
+        color: white;
+        height: 95vh;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .title {
+            font-size: 3rem;
+            color: rgb(0, 89, 255);
+
+        }
+
+        #join_room_requests {
+            overflow-y: scroll;
+            width: 100%;
+            height: 90%;
+            margin-top: 2rem;
+
+            :hover {
+                background-color: rgb(8, 8, 8);
+                transition: all 0.1s;
+            }
+
+            .requests {
+                padding: 1rem;
+                border-bottom: 0.1rem solid white;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+
+
+                .user-details {
+                    display: flex;
+                    flex-direction: row;
+
+                    img {
+                        width: 4rem;
+                        height: 4rem;
+                        border-radius: 50%;
+                        margin: 0 1rem;
+
+                    }
+
+                    .names {
+                        font-size: 1.5rem;
+
+                        .username {
+                            color: rgb(175, 172, 172);
+                        }
+                    }
+                }
+
+                .buttons {
+                    button {
+
+                        color: white;
+                        padding: 0.5rem 3rem;
+                        border-radius: 1rem;
+                        // background-color: rgb(0, 153, 255);
+                        text-shadow: $txtShadow;
+                        font-size: 1.5rem;
+                        font-weight: bold;
+                        cursor: pointer;
+                        margin: 0 0.5rem;
+                    }
+
+                    .accept {
+                        background-color: green;
+                    }
+
+                    .reject {
+                        background-color: red;
+                    }
+                }
+            }
+
+        }
+
+        .cancel-btn {
+            color: white;
+            padding: 0.5rem 3rem;
+            border-radius: 1rem;
+            background-color: rgb(0, 153, 255);
+            text-shadow: $txtShadow;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    }
+
+
+}
+
+
+
+
+/// *********** Some helper Component's style ********** ///
+/// For "Highlight" component ////
+#Highlight-component {
+    opacity: 0.98;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 4000000;
+    transform: translate(-50%, -50%) !important;
 }
