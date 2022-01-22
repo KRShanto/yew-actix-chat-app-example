@@ -26,6 +26,7 @@ enum WebsocketServerCommand {
     SendMessage,
     SendJoinRequest,
     AcceptJoinRequest,
+    RejectRequest,
 }
 // A command sends to client from server. server -> client
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
@@ -310,6 +311,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ChatSession {
                         delete_user_from_room(
                             command.user_id,
                             command.room_id,
+                            false,
                             &establish_connection(),
                         )
                         .unwrap();
@@ -358,6 +360,32 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ChatSession {
                             "{}",
                             "Command executed For accepting join request".green().bold()
                         );
+                    }
+                }
+                // *************** Reject Room Join Request command **************** //
+                if let Ok(command) = serde_json::from_str::<UserIDandRoomIDforServer>(&text) {
+                    if command.command_type == WebsocketServerCommand::RejectRequest {
+                        // Delete the `rooms_users` where accepted = false;
+                        delete_user_from_room(
+                            command.user_id,
+                            command.room_id,
+                            false,
+                            &establish_connection(),
+                        )
+                        .unwrap();
+
+                        // send the command `RemoveRequest` to client to so that the request can removed from all client
+                        self.server.do_send(ClientSendMessage {
+                            message: serde_json::to_string(&UserIDandRoomIDforClient {
+                                command_type: WebsocketClientCommand::RemoveRequest,
+                                user_id: command.user_id,
+                                room_id: command.room_id,
+                            })
+                            .unwrap(),
+                            current_room_id: command.room_id,
+                            send_type: SendType::Plural,
+                            user_id: self.user_id.expect(&user_not_found_error()),
+                        });
                     }
                 }
 

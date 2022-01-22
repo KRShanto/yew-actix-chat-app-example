@@ -72,6 +72,7 @@ pub fn add_user_into_room(
 pub fn delete_user_from_room(
     argu_user_id: i32,
     argu_room_id: i32,
+    argu_accepted: bool,
     connection: &PgConnection,
 ) -> Result<(), ()> {
     use crate::schema::rooms_users::dsl::*;
@@ -79,6 +80,7 @@ pub fn delete_user_from_room(
     match diesel::delete(
         rooms_users
             .filter(user_id.eq(&argu_user_id))
+            .filter(accepted.eq(&argu_accepted))
             .filter(room_id.eq(&argu_room_id)),
     )
     .execute(connection)
