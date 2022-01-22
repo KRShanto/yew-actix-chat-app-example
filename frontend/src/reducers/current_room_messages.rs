@@ -5,7 +5,7 @@ use wasm_bindgen_futures::spawn_local;
 use weblog::console_log;
 use yew::prelude::*;
 
-use crate::Message;
+use crate::components2::chat_app::Message;
 
 pub enum CurrentRoomMessageAction {
     ResetMessages(Vec<Message>), // / reset messages

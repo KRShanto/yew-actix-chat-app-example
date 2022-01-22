@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use yew::prelude::*;
 
-use crate::{Room, User};
+use crate::components2::chat_app::{Room, User};
 
 pub enum CurrentRoomAction {
     SelectRoom(Room),

@@ -12,11 +12,11 @@ use weblog::{console_error, console_log, console_warn};
 use yew::prelude::*;
 use yew::NodeRef;
 
+use crate::components2::chat_app::{Message, Room, User};
 use crate::reducers::{
     CurrentRoomAction, CurrentRoomMessageAction, CurrentRoomMessageState, CurrentRoomState,
     RoomListAction, RoomListState,
 };
-use crate::{Message, Room, User};
 
 // ############################# Websocket commands for Server ########################### //
 
@@ -27,6 +27,7 @@ pub enum WebsocketServerCommand {
     SendMessage, // When the user sends a message(clicks the send button), this command will execute.
     SendJoinRequest, // When the user sends a join request, this command will execute.
     AcceptJoinRequest,
+    RejectRequest,
 }
 
 // ############################# Websocket commands for client ########################### //

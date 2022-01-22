@@ -1,13 +1,13 @@
 use std::rc::Rc;
 use yew::prelude::*;
 
-use crate::Room;
+use crate::components2::chat_app::Room;
 
 pub enum RoomListAction {
     AddRoom(Room),
     RemoveRoom(Room),
 }
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub struct RoomListState {
     pub rooms: Vec<Room>,
 }

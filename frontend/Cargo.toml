@@ -13,7 +13,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json  = "*"
 wasm-bindgen-futures = "0.4"
 js-sys = "0.3.46"
-web-sys = { version = "0.3", features = ["Event","EventTarget","InputEvent", "WebSocket"] }
+web-sys = { version = "0.3", features = ["Event","HtmlDivElement","EventTarget","InputEvent", "WebSocket", "CssStyleDeclaration"] }
 chrono = { version = "0.4", features = ["wasmbind"] }
 weblog = "0.3.0"
 futures = "*"
@@ -22,3 +22,4 @@ rand = "*"
 getrandom = {version = "0.2.3", features = ["js"]}
 uuid = { version = "0.8", features = [  "v1", "v4", "wasm-bindgen"] }
 gloo-storage = "*"
+yew-router = "0.16"
