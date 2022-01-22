@@ -2,6 +2,7 @@
 
 use actix::prelude::*;
 use actix_cors::Cors;
+use actix_files::Files;
 use actix_web::{middleware, web};
 use actix_web::{App, HttpServer};
 use diesel::pg::PgConnection;
@@ -63,6 +64,7 @@ async fn main() -> std::io::Result<()> {
                 web::resource("/get-users-from-room").route(web::post().to(get_users_from_room)),
             )
             .service(web::resource("/get-join-requests").route(web::post().to(show_join_requests)))
+            .service(Files::new("/get-user-image/", "img/"))
     })
     .bind("127.0.0.1:8000")
     .unwrap()
