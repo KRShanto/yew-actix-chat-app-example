@@ -1,4 +1,4 @@
-use crate::components2::{
+use crate::components::{
     chat_app::{
         no_context_error, ChatInputRender, ChatOptionRender, JoinRoomRequestsRender, MessageBarRef,
     },

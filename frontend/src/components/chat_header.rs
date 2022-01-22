@@ -1,6 +1,6 @@
 use yew::prelude::*;
 
-use crate::components2::{
+use crate::components::{
     chat_app::{CreateNewRoomRender, JoinRoomRender},
     {MoreOptions, UserDetails},
 };

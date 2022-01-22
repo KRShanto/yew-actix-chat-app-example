@@ -13,11 +13,13 @@ use weblog::{console_log, console_warn};
 use yew::prelude::*;
 
 use crate::{
-    components2::chat_app::{
-        image_link, no_context_error, CreateNewRoomRender, JoinRoomRender, JoinRoomRequestsRender,
-        User,
+    components::{
+        chat_app::{
+            image_link, no_context_error, CreateNewRoomRender, JoinRoomRender,
+            JoinRoomRequestsRender, User,
+        },
+        Highlight,
     },
-    components2::Highlight,
     reducers::{CurrentRoomMessageState, CurrentRoomState},
     websocket::{UserIDandRoomIDforServer, WebsocketServerCommand},
 };

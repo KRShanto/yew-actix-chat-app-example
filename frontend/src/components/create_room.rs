@@ -6,7 +6,7 @@ use weblog::console_log;
 use yew::prelude::*;
 
 use crate::{
-    components2::{
+    components::{
         chat_app::{no_context_error, CreateNewRoomRender, Room, RoomInfo, User},
         Highlight,
     },

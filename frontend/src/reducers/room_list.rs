@@ -1,7 +1,7 @@
 use std::rc::Rc;
 use yew::prelude::*;
 
-use crate::components2::chat_app::Room;
+use crate::components::chat_app::Room;
 
 pub enum RoomListAction {
     AddRoom(Room),

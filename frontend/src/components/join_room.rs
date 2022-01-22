@@ -13,7 +13,7 @@ use weblog::{console_log, console_warn};
 use yew::prelude::*;
 
 use crate::{
-    components2::{
+    components::{
         chat_app::{
             no_context_error, JoinRoomRender, Room, RoomInfo, User, UserID, UserIDAndRoomID,
         },

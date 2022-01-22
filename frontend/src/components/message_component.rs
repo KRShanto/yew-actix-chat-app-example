@@ -13,7 +13,7 @@ use weblog::{console_log, console_warn};
 use yew::prelude::*;
 
 use crate::{
-    components2::{
+    components::{
         chat_app::{image_link, no_context_error, JoinRoomRequestsRender, User},
         Highlight,
     },

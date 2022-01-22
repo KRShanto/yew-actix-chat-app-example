@@ -12,7 +12,7 @@ use weblog::{console_error, console_log, console_warn};
 use yew::prelude::*;
 use yew::NodeRef;
 
-use crate::components2::chat_app::{Message, Room, User};
+use crate::components::chat_app::{Message, Room, User};
 use crate::reducers::{
     CurrentRoomAction, CurrentRoomMessageAction, CurrentRoomMessageState, CurrentRoomState,
     RoomListAction, RoomListState,

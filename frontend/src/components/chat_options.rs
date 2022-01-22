@@ -1,7 +1,7 @@
 use yew::prelude::*;
 
 use crate::{
-    components2::chat_app::{no_context_error, JoinRoomRequestsRender, User},
+    components::chat_app::{no_context_error, JoinRoomRequestsRender, User},
     reducers::CurrentRoomState,
 };
 

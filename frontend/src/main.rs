@@ -12,11 +12,11 @@ use web_sys::{Element, HtmlDivElement, HtmlElement, HtmlInputElement};
 use weblog::{console_log, console_warn};
 use yew::prelude::*;
 
-pub mod components2;
+pub mod components;
 pub mod reducers;
 pub mod websocket;
 
-use components2::{ChatApp, NavBar};
+use components::{ChatApp, NavBar};
 
 use reducers::{
     CurrentRoomAction, CurrentRoomMessageAction, CurrentRoomMessageState, CurrentRoomState,

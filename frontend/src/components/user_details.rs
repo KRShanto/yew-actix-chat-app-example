@@ -1,6 +1,6 @@
 use yew::prelude::*;
 
-use crate::components2::chat_app::{image_link, no_context_error, User};
+use crate::components::chat_app::{image_link, no_context_error, User};
 
 /// Complete**********
 #[function_component(UserDetails)]

@@ -3,7 +3,7 @@ use web_sys::WebSocket;
 use yew::prelude::*;
 
 use crate::{
-    components2::chat_app::{no_context_error, User},
+    components::chat_app::{no_context_error, User},
     reducers::CurrentRoomState,
     websocket::{MessageInfoForServer, WebsocketServerCommand},
 };

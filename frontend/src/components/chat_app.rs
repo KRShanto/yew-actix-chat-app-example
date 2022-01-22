@@ -13,7 +13,7 @@ use weblog::{console_log, console_warn};
 use yew::prelude::*;
 
 use crate::{
-    components2::{ChatBody, ChatHeader, CreateRoom, JoinRoom, JoinRoomRequests},
+    components::{ChatBody, ChatHeader, CreateRoom, JoinRoom, JoinRoomRequests},
     reducers::{
         CurrentRoomAction, CurrentRoomMessageAction, CurrentRoomMessageState, CurrentRoomState,
         RoomListAction, RoomListState,
