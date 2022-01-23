@@ -13,7 +13,7 @@ use backend::{
     db::establish_connection,
     route_functions::{
         get_a_user, get_messages, get_rooms, get_users_from_room, make_join_request, room_create,
-        save_file, show_join_requests, signup, ws_index,
+        save_file, show_join_requests, signup, validate_user_account, ws_index,
     },
 };
 
@@ -53,7 +53,9 @@ async fn main() -> std::io::Result<()> {
             .service(web::resource("/ws/").route(web::get().to(ws_index)))
             .service(web::resource("/upload-image").route(web::post().to(save_file)))
             .service(
-                web::scope("/auth").route("/sign-up", web::post().to(signup)), // .route("", web::post().to(login)),
+                web::scope("/auth")
+                    .route("/sign-up", web::post().to(signup))
+                    .route("/login", web::post().to(validate_user_account)),
             )
             .service(web::resource("/create-room").route(web::post().to(room_create)))
             .service(web::resource("/get-rooms").route(web::post().to(get_rooms)))

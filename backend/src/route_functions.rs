@@ -17,7 +17,7 @@ use crate::{
     db::{
         add_user_into_room, create_message, create_room, create_user, establish_connection,
         get_a_user_from_id, get_all_messages_for_a_room, get_all_rooms_for_a_user,
-        get_all_users_from_a_room, is_room_present, is_user_present,
+        get_all_users_from_a_room, is_room_present, is_user_present, validate_user,
     },
     models::Room,
 };
@@ -82,6 +82,12 @@ pub struct MessageInfo {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserID {
     user_id: i32, // user's id
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UsernameAndPassword {
+    username: String,
+    password: String,
 }
 
 // ************************************************************************* //
@@ -363,4 +369,28 @@ pub async fn show_join_requests(room_info: Json<RoomID>) -> HttpResponse {
         false,
         &establish_connection(),
     ))
+}
+
+// ************************************************************************* //
+// ########################### Valid a user ################################ //
+// ************************************************************************* //
+pub async fn validate_user_account(user_info: Json<UsernameAndPassword>) -> impl Responder {
+    println!(
+        "{}",
+        "A request has come for validate user's account"
+            .blue()
+            .bold()
+    );
+
+    match validate_user(
+        user_info.username.clone(),
+        user_info.password.clone(),
+        &establish_connection(),
+    ) {
+        Ok(value) => match value {
+            true => HttpResponse::Ok(),
+            false => HttpResponse::Unauthorized(), // TODO: I will figure out the best response for this situation
+        },
+        Err(_) => HttpResponse::InternalServerError(),
+    }
 }

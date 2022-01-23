@@ -85,3 +85,40 @@ pub fn get_a_user_from_id(user_id: i32, connection: &PgConnection) -> Result<Use
         }
     }
 }
+
+// ************************************************************************* //
+// ########################### validate a User ############################# //
+// ************************************************************************* //
+pub fn validate_user(
+    argu_username: String,
+    argu_password: String,
+    connection: &PgConnection,
+) -> Result<bool, ()> {
+    // if return_type == Ok(true) user_is_valid()
+    // else if return_type == Ok(false) user_is_not_valid()
+    // else there_is_an_error()
+
+    let result: Result<User, result::Error> = users
+        .filter(username.eq(argu_username))
+        .filter(password.eq(argu_password))
+        .first(connection);
+
+    match result {
+        Ok(_user) => {
+            // user is valid
+            Ok(true)
+        }
+        Err(error) => {
+            match error {
+                result::Error::NotFound => {
+                    // user is not valid
+                    Ok(false)
+                }
+                _ => {
+                    println!("{}", format!("{}", error).red().bold());
+                    Err(())
+                }
+            }
+        }
+    }
+}
