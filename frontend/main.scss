@@ -339,88 +339,6 @@ header {
 
     }
 
-
-
-
-
-    /// This is a common class;
-    .form {
-        position: relative;
-        // border: 3px solid yellow;
-        width: 60rem;
-        padding: 3rem;
-        border-radius: 1rem;
-        font-size: 1.5rem;
-        background-color: rgb(2, 17, 49);
-        box-shadow: 0rem 0rem 0.5rem white;
-
-        .form-title {
-            font-size: 3rem;
-            position: relative;
-            color: rgb(0, 255, 119);
-        }
-
-        .form-wrapper {
-            // border: $border;
-            position: relative;
-            margin: 1.5rem 0;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            width: 90%;
-            // border: $border;
-
-            label {
-                font-size: 2rem;
-                font-weight: bold;
-                color: rgb(12, 245, 225);
-                text-shadow: $txtShadow;
-            }
-
-            input {
-                margin: 1rem 0;
-                width: 100%;
-                background-color: transparent;
-                border: none;
-                border-bottom: 0.2rem solid white;
-                outline: none;
-                font-size: 1.8rem;
-                color: white;
-
-            }
-        }
-
-        .buttons-div {
-            display: flex;
-            flex-direction: row;
-            margin: 0 auto;
-            margin-top: 3rem;
-            width: 60%;
-            justify-content: space-between;
-            // border: $border;
-
-
-            button {
-                color: white;
-                font-size: 1.5rem;
-                font-weight: bold;
-                text-shadow: $txtShadow;
-                padding: 0.8rem 4rem;
-                border-radius: 1rem;
-                cursor: pointer;
-            }
-
-            .submit-btn {
-                background-color: rgb(22, 133, 22);
-
-            }
-
-            .cancel-btn {
-                background-color: rgb(236, 26, 26);
-            }
-        }
-    }
-
     #join-room-requests-main {
         // border: $border;
         box-shadow: 0rem 0rem 0.6rem white;
@@ -523,6 +441,83 @@ header {
 
 }
 
+/// This is a common class;
+.form {
+    position: relative;
+    // border: 3px solid yellow;
+    width: 60rem;
+    padding: 3rem;
+    border-radius: 1rem;
+    font-size: 1.5rem;
+    background-color: rgb(2, 17, 49);
+    box-shadow: 0rem 0rem 0.5rem white;
+
+    .form-title {
+        font-size: 3rem;
+        position: relative;
+        color: rgb(0, 255, 119);
+    }
+
+    .form-wrapper {
+        // border: $border;
+        position: relative;
+        margin: 1.5rem 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        width: 90%;
+        // border: $border;
+
+        label {
+            font-size: 2rem;
+            font-weight: bold;
+            color: rgb(12, 245, 225);
+            text-shadow: $txtShadow;
+        }
+
+        input {
+            margin: 1rem 0;
+            width: 100%;
+            background-color: transparent;
+            border: none;
+            border-bottom: 0.2rem solid white;
+            outline: none;
+            font-size: 1.8rem;
+            color: white;
+
+        }
+    }
+
+    .buttons-div {
+        display: flex;
+        flex-direction: row;
+        margin: 0 auto;
+        margin-top: 3rem;
+        width: 80%;
+        justify-content: space-between;
+        // border: $border;
+
+
+        button {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-shadow: $txtShadow;
+            padding: 0.8rem 4rem;
+            border-radius: 1rem;
+            cursor: pointer;
+        }
+
+        .submit-btn {
+            background-color: rgb(22, 133, 22);
+
+        }
+
+        .cancel-btn {
+            background-color: rgb(236, 26, 26);
+        }
+    }
+}
 
 
 

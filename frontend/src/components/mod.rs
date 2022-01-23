@@ -24,6 +24,7 @@ pub use chat_body::ChatBody;
 pub use chat_header::ChatHeader;
 pub use chat_input::ChatInput;
 pub use chat_options::ChatOptions;
+pub use create_account::CreateAccount;
 pub use create_room::CreateRoom;
 pub use highlight::Highlight;
 pub use join_room::JoinRoom;

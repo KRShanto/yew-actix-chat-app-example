@@ -103,6 +103,9 @@ pub struct ChatOptionRender(pub bool);
 #[derive(PartialEq)]
 pub struct JoinRoomRequestsRender(pub bool);
 
+#[derive(PartialEq)]
+pub struct CreateAccountRender(pub bool);
+
 pub fn no_context_error(context: &str) -> String {
     format!("No context found for {}", context)
 }
@@ -286,7 +289,6 @@ pub fn chatapp() -> Html {
             current_room_details,
         );
     }
-
     {
         /// Getting all rooms for the current user;
         let room_list = room_list.clone();
@@ -321,7 +323,6 @@ pub fn chatapp() -> Html {
             (),
         );
     }
-
     {
         /// When a room changes, change the state ChatInputRender;
         let chat_input_render = chat_input_render.clone();
@@ -345,7 +346,6 @@ pub fn chatapp() -> Html {
             current_room_details,
         )
     }
-
     {
         /// When a message changes, the element #message-bar should scroll to the bottom;
         let current_room_messages = current_room_messages.clone();

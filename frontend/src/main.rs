@@ -16,7 +16,10 @@ pub mod components;
 pub mod reducers;
 pub mod websocket;
 
-use components::{ChatApp, NavBar};
+use components::{
+    CreateAccount,
+    {chat_app::CreateAccountRender, ChatApp, NavBar},
+};
 
 use reducers::{
     CurrentRoomAction, CurrentRoomMessageAction, CurrentRoomMessageState, CurrentRoomState,
@@ -33,12 +36,20 @@ fn main() {
 
 #[function_component(App)]
 fn app() -> Html {
+    let create_account_render = use_state(|| CreateAccountRender(false));
+
     html! {
+
         <>
 
                 <header>
-                    <NavBar />
+                    <NavBar create_account_render = {create_account_render.clone()}/>
                 </header>
+
+                if (*create_account_render).0 {
+                    <CreateAccount create_account_render = {create_account_render.clone()}/>
+                }
+
                 <Temporary />
                 <ChatApp />
 
