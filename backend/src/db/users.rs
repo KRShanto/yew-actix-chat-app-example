@@ -93,9 +93,9 @@ pub fn validate_user(
     argu_username: String,
     argu_password: String,
     connection: &PgConnection,
-) -> Result<bool, ()> {
-    // if return_type == Ok(true) user_is_valid()
-    // else if return_type == Ok(false) user_is_not_valid()
+) -> Result<Option<User>, ()> {
+    // if return_type == Ok(Some) user_is_valid()
+    // else if return_type == Ok(None) user_is_not_valid()
     // else there_is_an_error()
 
     let result: Result<User, result::Error> = users
@@ -104,15 +104,15 @@ pub fn validate_user(
         .first(connection);
 
     match result {
-        Ok(_user) => {
+        Ok(user) => {
             // user is valid
-            Ok(true)
+            Ok(Some(user))
         }
         Err(error) => {
             match error {
                 result::Error::NotFound => {
                     // user is not valid
-                    Ok(false)
+                    Ok(None)
                 }
                 _ => {
                     println!("{}", format!("{}", error).red().bold());

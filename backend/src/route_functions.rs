@@ -388,9 +388,9 @@ pub async fn validate_user_account(user_info: Json<UsernameAndPassword>) -> impl
         &establish_connection(),
     ) {
         Ok(value) => match value {
-            true => HttpResponse::Ok(),
-            false => HttpResponse::Unauthorized(), // TODO: I will figure out the best response for this situation
+            Some(user) => Json(Some(user)).with_status(StatusCode::OK),
+            None => Json(None).with_status(StatusCode::UNAUTHORIZED), // TODO: I will figure out the best response for this situ
         },
-        Err(_) => HttpResponse::InternalServerError(),
+        Err(_) => Json(None).with_status(StatusCode::INTERNAL_SERVER_ERROR),
     }
 }
