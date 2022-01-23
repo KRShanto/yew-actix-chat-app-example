@@ -106,6 +106,9 @@ pub struct JoinRoomRequestsRender(pub bool);
 #[derive(PartialEq)]
 pub struct CreateAccountRender(pub bool);
 
+#[derive(PartialEq)]
+pub struct LoginRender(pub bool);
+
 pub fn no_context_error(context: &str) -> String {
     format!("No context found for {}", context)
 }

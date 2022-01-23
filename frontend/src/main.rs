@@ -17,8 +17,8 @@ pub mod reducers;
 pub mod websocket;
 
 use components::{
-    CreateAccount,
-    {chat_app::CreateAccountRender, ChatApp, NavBar},
+    chat_app::{CreateAccountRender, LoginRender},
+    ChatApp, CreateAccount, Login, NavBar,
 };
 
 use reducers::{
@@ -37,17 +37,21 @@ fn main() {
 #[function_component(App)]
 fn app() -> Html {
     let create_account_render = use_state(|| CreateAccountRender(false));
+    let login_render = use_state(|| LoginRender(false));
 
     html! {
 
         <>
 
                 <header>
-                    <NavBar create_account_render = {create_account_render.clone()}/>
+                    <NavBar create_account_render={create_account_render.clone()} login_render={login_render.clone()}/>
                 </header>
 
                 if (*create_account_render).0 {
-                    <CreateAccount create_account_render = {create_account_render.clone()}/>
+                    <CreateAccount {create_account_render}/>
+                }
+                if (*login_render).0 {
+                    <Login {login_render} />
                 }
 
                 <Temporary />

@@ -16,6 +16,7 @@ mod more_options;
 mod navbar;
 mod room_bar;
 mod room_component;
+mod use_form;
 mod user_details;
 
 pub use chat_app::ChatApp;
