@@ -8,7 +8,7 @@ use uuid::Uuid;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::spawn_local;
 use web_sys::WebSocket;
-use web_sys::{Element, HtmlDivElement, HtmlElement, HtmlInputElement};
+use web_sys::{Document, Element, HtmlDivElement, HtmlElement, HtmlInputElement};
 use weblog::{console_error, console_log, console_warn};
 use yew::prelude::*;
 
@@ -62,13 +62,20 @@ pub fn login(props: &LoginProps) -> Html {
                 if resp.status() == 200 {
                     // user is valid
                     console_log!("Logged in successfully");
+
                     /// Save user's info in localstorage
                     LocalStorage::set("user_info", resp.json::<User>().await.unwrap());
-                    /// Hide this component  
-                    login_render.set(LoginRender(false));
+
+                    /// reload the window for update all the states according to the new user
+                    let window = web_sys::window().expect("No Window object found!!");
+                    let document = window.document().expect("No Document object found!!");
+                    let location = document.location().expect("No Location object found!!");
+
+                    /// reload
+                    location.reload().unwrap();
                 } else if resp.status() == 401 {
                     // user is not valid
-                    console_warn!("Invalid credentials!");
+                    console_warn!("Invalid credentials!"); // TODO: Show a alert message
                 } else {
                     // Server error;
                     console_error!("Server error: {}", resp.status());

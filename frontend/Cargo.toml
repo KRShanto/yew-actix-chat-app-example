@@ -13,7 +13,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json  = "*"
 wasm-bindgen-futures = "0.4"
 js-sys = "0.3.46"
-web-sys = { version = "0.3", features = ["Event","HtmlDivElement","EventTarget","InputEvent", "WebSocket", "CssStyleDeclaration"] }
+web-sys = { version = "0.3", features = ["Event","HtmlDivElement","EventTarget","InputEvent", "WebSocket", "CssStyleDeclaration", "Document"] }
 chrono = { version = "0.4", features = ["wasmbind"] }
 weblog = "0.3.0"
 futures = "*"

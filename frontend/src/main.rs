@@ -43,19 +43,19 @@ fn app() -> Html {
 
         <>
 
-                <header>
-                    <NavBar create_account_render={create_account_render.clone()} login_render={login_render.clone()}/>
-                </header>
+        <header>
+            <NavBar create_account_render={create_account_render.clone()} login_render={login_render.clone()}/>
+        </header>
 
-                if (*create_account_render).0 {
-                    <CreateAccount {create_account_render}/>
-                }
-                if (*login_render).0 {
-                    <Login {login_render} />
-                }
+        if (*create_account_render).0 {
+            <CreateAccount {create_account_render}/>
+        }
+        if (*login_render).0 {
+            <Login {login_render} />
+        }
 
-                <Temporary />
-                <ChatApp />
+        <Temporary />
+        <ChatApp />
 
         </>
     }

@@ -22,9 +22,6 @@ use crate::{
         ws_onclose, ws_onerror, ws_onmessage, ws_opopen, MessageInfoForServer,
         UserAndRoomIDForServer, UserIDandRoomIDforServer, WebsocketServerCommand, WsRoomID,
     },
-    // ChatInputRender, ChatOptionRender, CreateNewRoomRender, CurrentRoomMessageAction,
-    // JoinRoomRender, JoinRoomRequestsRender, Message, MessageBarRef, Room, RoomID, RoomInfo, User,
-    // UserID, UserIDAndRoomID,
 };
 
 // Struct for holding details about any room;

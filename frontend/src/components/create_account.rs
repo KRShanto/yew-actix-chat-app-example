@@ -100,9 +100,6 @@ pub fn create_account(props: &CreateAccountProps) -> Html {
                 if resp.status() == 200 {
                     // TODO: Show a success message to the user;
 
-                    /// Hide the component
-                    create_account_render.set(CreateAccountRender(false));
-
                     let form_data = FormData::new().unwrap();
                     form_data.set_with_blob_and_filename(
                         "myform",
@@ -123,9 +120,14 @@ pub fn create_account(props: &CreateAccountProps) -> Html {
                     /// Saving user's info in localstorage;
                     // TODO: Later on I will store these info in cookies. For now, I am storing them in localstorage
                     LocalStorage::set("user_info", user_info).unwrap();
-                    console_log!(
-                                "Your account has been created successfully and you are logged in automatically"
-                            );
+
+                    /// reload the window for update all the states according to the new user
+                    let window = web_sys::window().expect("No Window object found!!");
+                    let document = window.document().expect("No Document object found!!");
+                    let location = document.location().expect("No Location object found!!");
+
+                    /// reload
+                    location.reload().unwrap();
                 }
             });
         }
