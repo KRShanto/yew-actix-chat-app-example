@@ -25,7 +25,9 @@ pub fn chat_input() -> Html {
         let user_details: User = use_context().expect(&no_context_error("User"));
 
         move |_| {
-            let input_value = input_ref.cast::<HtmlInputElement>().unwrap().value();
+            let input = input_ref.cast::<HtmlInputElement>().unwrap();
+            let input_value = input.value();
+
             if input_value.len() > 0 {
                 // Send this message to websocket
                 if let Some(ws) = (*ws).clone() {
@@ -40,7 +42,10 @@ pub fn chat_input() -> Html {
                     );
 
                     // reset input field
-                    input_ref.cast::<HtmlInputElement>().unwrap().set_value("");
+                    input.set_value("");
+
+                    // Focus on the input field
+                    input.focus();
                 }
             }
         }

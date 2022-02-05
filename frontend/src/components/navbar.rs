@@ -31,14 +31,13 @@ pub fn navbar(props: &NavBarProps) -> Html {
     html! {
         <>
         <nav>
-            <h1 class="logo">{"Yew Chat"}</h1>
+            <h1 class="logo">{"YewChat"}</h1>
             <ul>
                 <li><a href="">{"Home"}</a></li>
                 <li><a onclick={login_click}>{"Login"}</a></li>
                 <li onclick={register_click}><a>{"Register"}</a></li>
             </ul>
         </nav>
-        <hr />
         </>
     }
 }

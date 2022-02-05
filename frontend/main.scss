@@ -1,3 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@700&display=swap'); // font-family: 'Noto Sans', sans-serif;
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap'); // font-family: 'Poppins', sans-serif;
+
+
 $border: 0.2rem solid red;
 $txtShadow: 0.1rem 0.1rem 0.1rem black;
 
@@ -17,7 +21,9 @@ body {
     height: 100vh;
     background-color: rgb(44, 44, 44);
     color: #fff;
-    // height: 200vh;
+    font-family: 'Poppins',
+        sans-serif; // default font family
+    ;
 
 }
 
@@ -33,6 +39,7 @@ header {
         justify-content: space-around;
         font-size: 2rem;
         background-color: rgb(31, 30, 30);
+        border-bottom: 1px solid rgb(165, 165, 165);
 
 
         .logo {
@@ -46,6 +53,9 @@ header {
             li {
                 list-style: none;
                 margin: 0 2rem;
+                cursor: pointer;
+                font-family: 'Noto Sans',
+                    sans-serif;
 
                 a {
                     color: white;
@@ -121,15 +131,32 @@ header {
             transform: translateY(-50%);
 
             button {
+                $mainColor: rgb(8, 230, 137);
+
                 margin: 2rem;
-                padding: 0.5rem;
+                padding: 1rem;
                 border-radius: 0.5rem;
-                background: green;
-                color: white;
-                text-shadow: $txtShadow;
+                // color: white;
+                color: $mainColor;
+                // text-shadow: $txtShadow;
+                // text-shadow: 0.05rem 0.05rem 0.05rem black;
                 font-size: 1.5rem;
                 font-weight: bold;
+                border: 0.3rem solid transparent;
+                cursor: pointer;
+                background-color: transparent;
+
+                border: 0.1rem solid $mainColor;
+                box-shadow: 0rem 0rem 0.1rem white;
+                transition: 0.3s;
+
+                &:hover {
+                    background: $mainColor;
+                    color: white;
+                    // font-weight: bold;
+                }
             }
+
         }
     }
 
