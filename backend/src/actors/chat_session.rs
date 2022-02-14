@@ -21,31 +21,30 @@ const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 // A command comes from client to server. client -> server
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 enum WebsocketServerCommand {
-    UserSetUp,
-    ChangeRoom,
-    SendMessage,
-    SendJoinRequest,
-    AcceptJoinRequest,
-    RejectRequest,
+    UserSetUp, // When websocket first connected, this command will execute. It will setup the current/logged-in user in websocket
+    ChangeRoom, // When the user clicks on a room, this command will execute. I will set that room in websocket
+    SendMessage, // When the user sends a message(clicks the send button), this command will execute. This will create a new message and send it to all other users joined in the room
+    SendJoinRequest, // When the user sends a join request, this command will execute. This will create a join request row in database and send back the ```AppendJoinRequest``` command to the client
+    AcceptJoinRequest, // When the user accepts a join request(clicks on the accept button). This will send back the ```AppendRoom``` command to the client
+    RejectRequest, // When the user rejects a join request(clicks on the reject button). This will send back the ```RemoveRequest``` command to the client
 }
 // A command sends to client from server. server -> client
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 enum WebsocketClientCommand {
-    AddMessage,
-    ShowJoinRequest,
-    AppendRoom,
+    AddMessage, // when a message is received from the server. after sending the ```WebsocketServerCommand::SendMessage``` command websocket server will send this command(if there is no error). Then this command will add that message to the room's list of messages
+    AppendJoinRequest, // When any user sends a join request, this command will recieved to all user's on the current room;
+    AppendRoom, // When a user accepts join requests, this command will recieved to that user who sent the join request
     RemoveRequest, // This will remove the list of join requests. Not reject the request. This command should execute when a request is accepted
 }
 
-// `UserSetUp` commmand
-// info of user when the `UserSetUp` command is executed from client;
-// Use this command when the websocket is first connected to the server
+// Info for `UserSetUp` command
 #[derive(Debug, Serialize, Deserialize)]
 struct UserID {
     command_type: WebsocketServerCommand,
     user_id: i32,
 }
 
+// Info for changing `ChangeRoom` command
 #[derive(Debug, Serialize, Deserialize)]
 struct RoomID {
     command_type: WebsocketServerCommand,
@@ -178,8 +177,10 @@ impl Handler<SendMessage> for ChatSession {
     type Result = ();
 
     fn handle(&mut self, msg: SendMessage, ctx: &mut Self::Context) {
-        // Sending message to client/browser
+        // **** Sending message to client/browser **** //
+
         if msg.send_type == SendType::Plural {
+            // send to all clients whose current_room_id is ```msg.current_room_id```
             if let Some(room_id) = self.current_room_id {
                 println!("{}", "Sending message to client/browser".green().bold());
 
@@ -188,6 +189,7 @@ impl Handler<SendMessage> for ChatSession {
                 }
             }
         } else if msg.send_type == SendType::Singular {
+            // send to that client whose user_id = msg.user_id
             if let Some(user_id) = self.user_id {
                 if msg.user_id == user_id {
                     ctx.text(msg.message)
@@ -279,14 +281,14 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for ChatSession {
                 // *************** Room Join Request command *************** //
                 if let Ok(command) = serde_json::from_str::<UserAndRoomIDForServer>(&text) {
                     if command.command_type == WebsocketServerCommand::SendJoinRequest {
-                        // Send `ShowJoinRequest` comamnd to client;
+                        // Send `AppendJoinRequest` comamnd to clients;
                         self.server.do_send(ClientSendMessage {
                             send_type: SendType::Plural,
                             user_id: self.user_id.expect(&user_not_found_error()),
                             current_room_id: command.room_id,
                             message: serde_json::to_string(&UserAndRoomIDForClient {
                                 room_id: command.room_id,
-                                command_type: WebsocketClientCommand::ShowJoinRequest,
+                                command_type: WebsocketClientCommand::AppendJoinRequest,
                                 img_url: command.img_url,
                                 nickname: command.nickname,
                                 username: command.username,

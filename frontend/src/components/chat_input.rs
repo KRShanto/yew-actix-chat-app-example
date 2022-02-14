@@ -8,11 +8,16 @@ use crate::{
     websocket::{MessageInfoForServer, WebsocketServerCommand},
 };
 
-/// Complete**********
+// Message/Text sending component
+// This component will send the message from the client to the room
+// This component is called by the ```ChatBar``` component
 #[function_component(ChatInput)]
 pub fn chat_input() -> Html {
-    let input_ref = NodeRef::default();
+    // TODO: For now the component only sends the data if the user click on the button, later it will send the data when the user hits Enter
+    // reference of the <input /> element
+    let input_ref = &NodeRef::default();
 
+    // onclick event of the <button> element
     let onclick = {
         let input_ref = input_ref.clone();
 
@@ -25,12 +30,18 @@ pub fn chat_input() -> Html {
         let user_details: User = use_context().expect(&no_context_error("User"));
 
         move |_| {
+            // <input /> element
             let input = input_ref.cast::<HtmlInputElement>().unwrap();
+
+            // value of the input element
             let input_value = input.value();
 
+            // It doesn't make sense to send blank/empty messages to the room.
+            // So checking the length of the input element
+            // It its greater than 0 then send the message to the room
             if input_value.len() > 0 {
                 // Send this message to websocket
-                if let Some(ws) = (*ws).clone() {
+                if let Some(ws) = &*ws {
                     ws.send_with_str(
                         &serde_json::to_string(&MessageInfoForServer {
                             msg: input_value,
@@ -39,13 +50,14 @@ pub fn chat_input() -> Html {
                             user_id: user_details.id,
                         })
                         .unwrap(),
-                    );
+                    )
+                    .unwrap();
 
-                    // reset input field
+                    // make the input field empty
                     input.set_value("");
 
                     // Focus on the input field
-                    input.focus();
+                    input.focus().unwrap();
                 }
             }
         }
@@ -58,7 +70,7 @@ pub fn chat_input() -> Html {
             <input
                 placeholder="Send any message"
                 type="text"
-                ref={input_ref.clone()}
+                ref={input_ref}
             />
             <button {onclick}>{"Send"}</button>
 

@@ -1,5 +1,3 @@
-#![allow(dead_code, unused)]
-
 use actix::prelude::*;
 use actix_cors::Cors;
 use actix_files::Files;
@@ -10,7 +8,6 @@ use diesel::r2d2::{self, ConnectionManager};
 
 use backend::{
     actors::ChatServer,
-    db::establish_connection,
     route_functions::{
         get_a_user, get_messages, get_rooms, get_users_from_room, make_join_request, room_create,
         save_file, show_join_requests, signup, validate_user_account, ws_index,
@@ -27,6 +24,7 @@ async fn main() -> std::io::Result<()> {
     // set up database connection pool
     let dbconnection = std::env::var("DATABASE_URL").expect("DATABASE_URL not found!");
 
+    // PostgreSQL connnection manager
     let manager = ConnectionManager::<PgConnection>::new(dbconnection);
 
     let pool: r2d2::Pool<ConnectionManager<PgConnection>> = r2d2::Pool::builder()

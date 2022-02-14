@@ -1,26 +1,7 @@
-#![allow(dead_code, unused)]
-use gloo_storage::{LocalStorage, Storage};
-use reqwasm::http::{FormData, Request};
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::rc::Rc;
-use uuid::Uuid;
-use wasm_bindgen::prelude::*;
-use wasm_bindgen_futures::spawn_local;
-use web_sys::WebSocket;
-use web_sys::{Element, HtmlDivElement, HtmlElement, HtmlInputElement};
-use weblog::{console_log, console_warn};
+use crate::components::chat_app::{no_context_error, User};
 use yew::prelude::*;
 
-use crate::{
-    components::{
-        chat_app::{image_link, no_context_error, JoinRoomRequestsRender, User},
-        Highlight,
-    },
-    reducers::{CurrentRoomMessageState, CurrentRoomState},
-    websocket::{UserIDandRoomIDforServer, WebsocketServerCommand},
-};
-
+// props of ```MessageComponent``` component
 #[derive(PartialEq, Properties)]
 pub struct MessageComponentProps {
     pub user_id: i32,
@@ -29,17 +10,22 @@ pub struct MessageComponentProps {
     pub img_url: String, // img url of current user. give the full path with http://127.0.0.1:8000/get-user-image/{}
 }
 
-/// Complete**********
+// The component for each messages;
+// This component is called by the ```MessageBar``` component
 #[function_component(MessageComponent)]
 pub fn message(props: &MessageComponentProps) -> Html {
     let user_details: User = use_context().expect(&no_context_error("User"));
 
+    // class name of <section> element
+    // if this user is the logged in user, then class will be "owner", otherwise class will be "other"
     let class_name = if props.user_id == user_details.id {
         "owner"
     } else {
         "other"
     };
 
+    // user's nickname for displaying on the browser.
+    // if this user is the logged in user, then nickname will be "You", otherwise nickname will be prop's user's nickname
     let nickname = if props.nickname == user_details.nickname {
         String::from("You")
     } else {
@@ -59,7 +45,6 @@ pub fn message(props: &MessageComponentProps) -> Html {
                 <h1 class="nickname">{nickname}</h1>
                 <p
                     class="message"
-                    // style={format!("width: {}px;", props.message.len())}
                 >
                     {props.message.clone()
                 }</p>

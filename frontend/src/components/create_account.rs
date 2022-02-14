@@ -2,27 +2,17 @@ use gloo_storage::LocalStorage;
 use gloo_storage::Storage;
 use reqwasm::http::{FormData, Request};
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
 use uuid::Uuid;
-use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::spawn_local;
-use web_sys::WebSocket;
-use web_sys::{Element, HtmlDivElement, HtmlElement, HtmlInputElement};
-use weblog::{console_log, console_warn};
+use web_sys::HtmlInputElement;
 use yew::prelude::*;
 
-use crate::{
-    components::{
-        chat_app::{
-            no_context_error, CreateAccountRender, JoinRoomRender, Room, RoomInfo, User, UserID,
-            UserIDAndRoomID,
-        },
-        Highlight,
-    },
-    websocket::{UserAndRoomIDForServer, WebsocketServerCommand},
+use crate::components::{
+    chat_app::{server_url, CreateAccountRender, User},
+    Highlight,
 };
 
-// *********** User info send to the server ************* //
+// User info send to the server //
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserInfo {
     username: String,
@@ -31,15 +21,18 @@ pub struct UserInfo {
     img_url: String,
 }
 
+// props of the ```CreateAccount``` component
 #[derive(PartialEq, Properties)]
 pub struct CreateAccountProps {
     pub create_account_render: UseStateHandle<CreateAccountRender>,
 }
 
-/// Creates a new account/sign up account
+// Creates a new account/sign up account
 // TODO: For now I am not validating anything. Later on I will.
+// This component will be called by the ```App``` component
 #[function_component(CreateAccount)]
 pub fn create_account(props: &CreateAccountProps) -> Html {
+    // Some references of <input /> field
     let nickname_ref = NodeRef::default();
     let username_ref = NodeRef::default();
     let password_ref = NodeRef::default();
@@ -52,31 +45,36 @@ pub fn create_account(props: &CreateAccountProps) -> Html {
         let username_ref = username_ref.clone();
         let password_ref = password_ref.clone();
         let img_ref = img_ref.clone();
-        let create_account_render = create_account_render.clone();
 
         move |_| {
             let nickname = nickname_ref
                 .cast::<HtmlInputElement>()
                 .expect("You need to enter a nickname")
                 .value();
+
             let username = username_ref
                 .cast::<HtmlInputElement>()
                 .expect("You need to enter a username")
                 .value();
+
             let password = password_ref
                 .cast::<HtmlInputElement>()
                 .expect("You need to enter a password")
                 .value();
+
             let img = img_ref
                 .cast::<HtmlInputElement>()
                 .expect("YOu need to give an image")
                 .files()
                 .unwrap();
-            let img_url = Uuid::new_v4().to_string() + "----" + &img.get(0).unwrap().name();
 
-            let create_account_render = create_account_render.clone();
+            // Joining the original image url with the uuid for making this a unique path/url
+            let img_url = Uuid::new_v4().to_string()
+                + "----"
+                + &img.get(0).expect("You must enter an image").name();
 
             spawn_local(async move {
+                // user's info for making post requests
                 let user_info = UserInfo {
                     username,
                     password,
@@ -84,49 +82,53 @@ pub fn create_account(props: &CreateAccountProps) -> Html {
                     img_url: img_url.clone(),
                 };
 
-                let user_info_json = serde_json::to_string(&user_info).unwrap();
+                // json data of `user_info`
+                let user_info = serde_json::to_string(&user_info).unwrap();
 
-                /// Sending user's info to the Server.
-                let resp = Request::post("http://127.0.0.1:8000/auth/sign-up")
+                // Making post request to creating new User
+                let resp = Request::post(&server_url(Some("auth/sign-up")))
                     .header("Content-Type", "application/json")
-                    .body(user_info_json)
+                    .body(user_info)
                     .send()
                     .await
                     .unwrap();
 
-                // Server will send the newly created user with `id`
-                let user_info = resp.json::<User>().await.unwrap();
-
                 if resp.status() == 200 {
                     // TODO: Show a success message to the user;
 
+                    // Server will send the newly created `User` with `id`
+                    let user_info = resp.json::<User>().await.unwrap();
+
+                    // Image file's data
                     let form_data = FormData::new().unwrap();
-                    form_data.set_with_blob_and_filename(
-                        "myform",
-                        &img.clone().get(0).unwrap(),
-                        &img_url,
-                    );
+                    form_data
+                        .set_with_blob_and_filename(
+                            "myform",
+                            &img.clone().get(0).unwrap(),
+                            &img_url,
+                        )
+                        .unwrap();
 
-                    /// Uploading user's image
-                    spawn_local(async move {
-                        let resp = Request::post("http://127.0.0.1:8000/upload-image")
-                            .body(form_data)
-                            .send()
-                            .await
-                            .unwrap()
-                            .ok();
-                    });
+                    // Uploading user's image
+                    Request::post(&server_url(Some("upload-image")))
+                        .body(form_data)
+                        .send()
+                        .await
+                        .unwrap()
+                        .ok();
 
-                    /// Saving user's info in localstorage;
+                    // Saving user's info in localstorage;
                     // TODO: Later on I will store these info in cookies. For now, I am storing them in localstorage
                     LocalStorage::set("user_info", user_info).unwrap();
 
-                    /// reload the window for update all the states according to the new user
+                    // The `Window` object of javascript
                     let window = web_sys::window().expect("No Window object found!!");
+                    // The `Document` object of javascript
                     let document = window.document().expect("No Document object found!!");
+                    // The `Location` object of javascript
                     let location = document.location().expect("No Location object found!!");
 
-                    /// reload
+                    // reload the window for update all the states according to the new user
                     location.reload().unwrap();
                 }
             });
@@ -135,7 +137,7 @@ pub fn create_account(props: &CreateAccountProps) -> Html {
 
     let on_cancel = {
         move |_| {
-            /// Hide the component;
+            // Hide the component;
             create_account_render.set(CreateAccountRender(false));
         }
     };

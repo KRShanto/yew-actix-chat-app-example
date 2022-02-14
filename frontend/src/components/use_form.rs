@@ -1,3 +1,4 @@
+#![allow(dead_code, unused)]
 /// This hook is for making <form>s.
 /// If anyone watching this line (line: 2) right now, then this hook is not ready and I am not sure how I will write this is future. So you should just ignore this file for now;
 /// When this component is ready it will looks like this -->

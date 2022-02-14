@@ -7,30 +7,34 @@ pub enum RoomListAction {
     AddRoom(Room),
     RemoveRoom(Room),
 }
+
+// List of all rooms that the user has joined
 #[derive(PartialEq, Debug)]
 pub struct RoomListState {
     pub rooms: Vec<Room>,
 }
+
 impl RoomListState {
     pub fn new() -> Self {
         Self { rooms: Vec::new() }
     }
 }
+
 impl Reducible for RoomListState {
     type Action = RoomListAction;
 
     fn reduce(self: Rc<Self>, action: Self::Action) -> Rc<Self> {
-        let new_room_list: Vec<Room> = match action {
+        match action {
+            // Add a new room
             RoomListAction::AddRoom(room) => {
-                let mut new_room: Vec<Room> = Vec::new();
-                for room in self.rooms.clone() {
-                    new_room.push(room);
-                }
-                new_room.push(room);
+                let mut new_rooms: Vec<Room> = self.rooms.clone();
+                new_rooms.push(room);
 
-                new_room
+                Self { rooms: new_rooms }.into()
             }
+            // Delete a room
             RoomListAction::RemoveRoom(room_to_remove) => {
+                // Return those rooms whose id != room_to_remove.id
                 let new_rooms: Vec<Room> = self
                     .rooms
                     .clone()
@@ -38,13 +42,9 @@ impl Reducible for RoomListState {
                     .filter(|room| room.id != room_to_remove.id)
                     .collect();
 
-                new_rooms
-                // TODO: Currently I am not removing any room. Later on I will.
+                // TODO: Currently I have not give any feature to remove any room. Later on I will. This action should work but not tested yet!
+                Self { rooms: new_rooms }.into()
             }
-        };
-        Self {
-            rooms: new_room_list,
         }
-        .into()
     }
 }

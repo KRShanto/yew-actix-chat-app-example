@@ -17,27 +17,20 @@ pub struct HighlightProps {
     pub children: Children,
 }
 
+// This component will highlight the child elements.
+// TODO: I will provide more details later
+// This component can be called by any component
 #[function_component(Highlight)]
 pub fn highligh(props: &HighlightProps) -> Html {
-    /// This component will make its child components highlighted. That means it will make every element's opacity to a low value but the child's one will be high;
-    // TODO: I this component isn't complete. I will complete later;
+    // This component will make its child components highlighted. That means it will make every element's opacity to a low value but the child's one will be high(in future)
+    // TODO: This component isn't complete. I will complete later;
     let div_ref = NodeRef::default();
     let unique_class_name = Uuid::new_v4().to_string();
-    // let document = Document::new();
 
     {
         let div_ref = div_ref.clone();
         let unique_class_name = unique_class_name.to_string();
-        use_effect_with_deps(
-            move |_| {
-                // console_log!("The div is loaded");
-
-                // downOpacityToAllElements(unique_class_name);
-
-                || ()
-            },
-            (),
-        );
+        use_effect_with_deps(move |_| || (), ());
     }
 
     html! {

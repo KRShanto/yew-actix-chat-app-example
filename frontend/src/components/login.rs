@@ -1,33 +1,31 @@
-#![allow(dead_code, unused)]
 use gloo_storage::{LocalStorage, Storage};
-use reqwasm::http::{FormData, Request};
+use reqwasm::http::Request;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::rc::Rc;
-use uuid::Uuid;
-use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::spawn_local;
-use web_sys::WebSocket;
-use web_sys::{Document, Element, HtmlDivElement, HtmlElement, HtmlInputElement};
+use web_sys::HtmlInputElement;
 use weblog::{console_error, console_log, console_warn};
 use yew::prelude::*;
 
 use crate::components::{
-    chat_app::{LoginRender, User},
+    chat_app::{server_url, LoginRender, User},
     Highlight,
 };
 
+// username && password for sending in server
 #[derive(Debug, Serialize, Deserialize)]
 struct UsernameAndPassword {
     username: String,
     password: String,
 }
 
+// props of ```Login``` component
 #[derive(PartialEq, Properties)]
 pub struct LoginProps {
     pub login_render: UseStateHandle<LoginRender>,
 }
 
+// Login User component
+// This component is called by the ```App``` component
 #[function_component(Login)]
 pub fn login(props: &LoginProps) -> Html {
     let login_render = props.login_render.clone();
@@ -35,24 +33,25 @@ pub fn login(props: &LoginProps) -> Html {
     let username_ref = NodeRef::default();
     let password_ref = NodeRef::default();
 
+    // onclick event of <button class="submit-btn"> element
     let on_submit = {
         let username_ref = username_ref.clone();
         let password_ref = password_ref.clone();
-        let login_render = login_render.clone();
 
         move |_| {
             // TODO: I will validate handle these errors later;
             let username = username_ref.cast::<HtmlInputElement>().unwrap().value();
             let password = password_ref.cast::<HtmlInputElement>().unwrap().value();
-            let login_render = login_render.clone();
 
             spawn_local(async move {
-                /// Data for sending to the server
-                let username_password =
-                    serde_json::to_string(&UsernameAndPassword { username, password }).unwrap();
+                // Data for sending to the server
+                let username_password = UsernameAndPassword { username, password };
 
-                /// post request for validating username and password
-                let resp = Request::post("http://127.0.0.1:8000/auth/login")
+                // Json data of `username_password`
+                let username_password = serde_json::to_string(&username_password).unwrap();
+
+                // post request for validating username and password
+                let resp = Request::post(&server_url(Some("auth/login")))
                     .header("Content-Type", "application/json")
                     .body(username_password)
                     .send()
@@ -63,29 +62,36 @@ pub fn login(props: &LoginProps) -> Html {
                     // user is valid
                     console_log!("Logged in successfully");
 
-                    /// Save user's info in localstorage
-                    LocalStorage::set("user_info", resp.json::<User>().await.unwrap());
+                    // Save user's info in localstorage
+                    // TODO: I will save these info in cookies later
 
-                    /// reload the window for update all the states according to the new user
+                    LocalStorage::set("user_info", resp.json::<User>().await.unwrap()).unwrap();
+
+                    // javascript `Window` object
                     let window = web_sys::window().expect("No Window object found!!");
+                    // javascript `Document` object
                     let document = window.document().expect("No Document object found!!");
+                    // javascript `Location` object
                     let location = document.location().expect("No Location object found!!");
 
-                    /// reload
+                    // reload the window for update all the states according to the new user
                     location.reload().unwrap();
                 } else if resp.status() == 401 {
                     // user is not valid
                     console_warn!("Invalid credentials!"); // TODO: Show a alert message
                 } else {
                     // Server error;
+                    // TODO: Do not show this message in production
                     console_error!("Server error: {}", resp.status());
                 }
             })
         }
     };
 
+    // onclick event of <button class="cancel-btn">
     let on_cancel = {
         move |_| {
+            // Hide this component
             login_render.set(LoginRender(false));
         }
     };

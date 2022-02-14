@@ -2,10 +2,11 @@ use yew::prelude::*;
 
 use crate::components::chat_app::{image_link, no_context_error, User};
 
-/// Complete**********
+// Some details about the current/logged-in user
+// User's nickname, image, username will shown here
+// This component is called by the ```ChatHeader``` component
 #[function_component(UserDetails)]
 pub fn user_details() -> Html {
-    /// User's nickname, image, username will shown here
     let user_details: User = use_context().expect(&no_context_error("User"));
 
     html! {

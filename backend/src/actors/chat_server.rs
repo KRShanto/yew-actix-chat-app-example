@@ -16,6 +16,8 @@ impl Handler<Join> for ChatServer {
 
     fn handle(&mut self, msg: Join, _ctx: &mut Context<Self>) {
         println!("{}", "A new client joined the chat server".blue().bold());
+
+        // new client joined the chat server. Save that client's address to the ```addr_of_all_other_actors```
         self.addr_of_all_other_actors.push(Some(msg.addr));
     }
 }
@@ -23,8 +25,8 @@ impl Handler<Join> for ChatServer {
 impl Handler<ClientSendMessage> for ChatServer {
     type Result = ();
 
+    // Sending messages to all actors.
     fn handle(&mut self, msg: ClientSendMessage, _ctx: &mut Context<Self>) {
-        // Sending messages to all actors.
         for addr in self.addr_of_all_other_actors.clone() {
             if let Some(addr) = addr {
                 match addr.do_send(SendMessage {
@@ -47,33 +49,3 @@ impl Handler<ClientSendMessage> for ChatServer {
         }
     }
 }
-// impl Handler<ClientSendOneMessage> for ChatServer {
-//     type Result = ();
-
-//     fn handle(&mut self, msg: ClientSendOneMessage, _ctx: &mut Context<Self>) {
-//         // Sending messages to all actors.
-//         for addr in self.addr_of_all_other_actors.clone() {
-//             if let Some(addr) = addr {
-//                 // match addr.do_send(SendOneMessage {
-//                 //     message: msg.message.clone(),
-//                 //     user_id: msg.user_id,
-//                 // }) {
-//                 //     Ok(_) => {}
-//                 //     Err(error) => {
-//                 //         println!(
-//                 //             "{}",
-//                 //             format!("Failed to send websocket message: {:?}", error)
-//                 //                 .red()
-//                 //                 .bold()
-//                 //         );
-//                 //     }
-//                 // }
-
-//                 addr.do_send(SendOneMessage {
-//                     message: msg.message.clone(),
-//                     user_id: msg.user_id,
-//                 });
-//             }
-//         }
-//     }
-// }
