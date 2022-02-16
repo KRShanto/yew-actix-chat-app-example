@@ -1,6 +1,6 @@
 use gloo_storage::LocalStorage;
 use gloo_storage::Storage;
-use reqwasm::http::{FormData, Request};
+use reqwasm::http::{FormData, Request, RequestCredentials, RequestMode};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use wasm_bindgen_futures::spawn_local;
@@ -89,6 +89,9 @@ pub fn create_account(props: &CreateAccountProps) -> Html {
                 let resp = Request::post(&server_url(Some("auth/sign-up")))
                     .header("Content-Type", "application/json")
                     .body(user_info)
+                    // The property "credentials" and "mode" is needed for cookie related works. This not be need if the frontend and backend is the same domain/port. While the frontend is developed in different port, so this is needed
+                    .credentials(RequestCredentials::Include)
+                    .mode(RequestMode::Cors)
                     .send()
                     .await
                     .unwrap();

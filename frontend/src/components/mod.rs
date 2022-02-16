@@ -1,3 +1,4 @@
+mod auth;
 pub mod chat_app;
 mod chat_bar;
 mod chat_body;
@@ -19,6 +20,7 @@ mod room_component;
 mod use_form;
 mod user_details;
 
+pub use auth::Auth;
 pub use chat_app::ChatApp;
 pub use chat_bar::ChatBar;
 pub use chat_body::ChatBody;

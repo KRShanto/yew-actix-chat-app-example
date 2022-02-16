@@ -1,9 +1,9 @@
-use gloo_storage::{LocalStorage, Storage};
 use reqwasm::http::Request;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen_futures::spawn_local;
 use web_sys::Element;
 use web_sys::WebSocket;
+use weblog::console_log;
 use yew::prelude::*;
 
 use crate::{
@@ -112,11 +112,11 @@ pub fn chatapp() -> Html {
     // list of all rooms that the user is currently joined
     let room_list = use_reducer(RoomListState::new);
 
-    // details of logged in user. // TODO: For now I am getting these values from localhost, later I will use cookies instead of localhost
-    let user_details: User = LocalStorage::get("user_info").unwrap();
-
     // details of currently selected room
     let current_room_details = use_reducer(CurrentRoomState::new);
+
+    // ```Auth``` component will provide the `User` object from the context if the user is logged in.
+    let user_details: User = use_context().expect(&no_context_error("User"));
 
     // state of current room's messages.
     let current_room_messages = use_reducer(CurrentRoomMessageState::new);
@@ -439,7 +439,7 @@ pub fn server_url<'a>(rest: Option<&str>) -> String {
 }
 
 pub fn no_context_error(context: &str) -> String {
-    format!("No context found for {}", context)
+    format!("No context found for `{}`", context)
 }
 
 pub fn image_link(img_url: &str) -> String {

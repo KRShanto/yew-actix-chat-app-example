@@ -122,3 +122,22 @@ pub fn validate_user(
         }
     }
 }
+
+pub fn check_user(argu_username: String, connection: &PgConnection) -> Result<Option<User>, ()> {
+    // if return_type == Ok(Some) user_is_valid()
+    // else if return_type == Ok(None) user_is_not_valid()
+    // else there_is_an_error()
+
+    let result = users.filter(username.eq(argu_username)).first(connection);
+
+    match result {
+        Ok(user) => Ok(Some(user)),
+        Err(error) => match error {
+            result::Error::NotFound => Ok(None),
+            _ => {
+                println!("{}", format!("{}", error).red().bold());
+                Err(())
+            }
+        },
+    }
+}

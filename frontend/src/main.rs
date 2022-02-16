@@ -6,7 +6,7 @@ pub mod websocket;
 
 use components::{
     chat_app::{CreateAccountRender, LoginRender},
-    ChatApp, CreateAccount, Login, NavBar,
+    Auth, ChatApp, CreateAccount, Login, NavBar,
 };
 
 fn main() {
@@ -31,10 +31,12 @@ fn app() -> Html {
             <CreateAccount {create_account_render}/>
         }
         if (*login_render).0 {
-            <Login {login_render} />
+            <Login login_render = {login_render.clone()} />
         }
 
-        <ChatApp />
+        <Auth {login_render}>
+            <ChatApp />
+        </Auth>
 
         </>
     }

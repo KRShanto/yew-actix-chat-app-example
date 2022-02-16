@@ -2,6 +2,7 @@
 #![allow(dead_code, unused)]
 use actix::prelude::*;
 use actix_multipart::Multipart;
+use actix_session::Session;
 use actix_web::{http::StatusCode, web, web::Json, Error, HttpRequest, HttpResponse, Responder};
 use actix_web_actors::ws;
 use colored::*;
@@ -15,9 +16,10 @@ use uuid::Uuid;
 use crate::{
     actors::{ChatServer, ChatSession},
     db::{
-        add_user_into_room, create_message, create_room, create_user, establish_connection,
-        get_a_user_from_id, get_all_messages_for_a_room, get_all_rooms_for_a_user,
-        get_all_users_from_a_room, is_room_present, is_user_present, validate_user,
+        add_user_into_room, check_user, create_message, create_room, create_user,
+        establish_connection, get_a_user_from_id, get_all_messages_for_a_room,
+        get_all_rooms_for_a_user, get_all_users_from_a_room, is_room_present, is_user_present,
+        validate_user,
     },
     models::Room,
 };
@@ -100,8 +102,6 @@ pub async fn ws_index(
 ) -> Result<HttpResponse, Error> {
     let response = ws::start(ChatSession::new(server.get_ref().clone()), &request, stream);
 
-    // println!("response: {:?}", response);
-
     response
 }
 
@@ -141,7 +141,11 @@ pub async fn save_file(mut payload: Multipart) -> Result<HttpResponse, Error> {
 // ************************************************************************* //
 // ######################### Creating user account ######################### //
 // ************************************************************************* //
-pub async fn signup(request: HttpRequest, user_info: Json<UserInfo>) -> impl Responder {
+pub async fn signup(
+    request: HttpRequest,
+    session: Session,
+    user_info: Json<UserInfo>,
+) -> impl Responder {
     println!(
         "{}",
         "A request has come for creating new account.".blue().bold()
@@ -155,6 +159,21 @@ pub async fn signup(request: HttpRequest, user_info: Json<UserInfo>) -> impl Res
         user_info.img_url.clone(),
     );
 
+    // match result {
+    //     Err(e) => {
+    //         if let Some(error_msg) = e {
+    //             Json(None).with_status(StatusCode::CONFLICT)
+    //         } else {
+    //             Json(None).with_status(StatusCode::INTERNAL_SERVER_ERROR)
+    //         }
+    //     }
+    //     Ok(user) => {
+    //         println!("user: {:?}", user);
+    //         Json(Some(user)).with_status(StatusCode::OK)
+    //         // TODO: Note: Now I am returning the `password` also. But later I will not return password
+    //     }
+    // }
+
     match result {
         Err(e) => {
             if let Some(error_msg) = e {
@@ -165,10 +184,13 @@ pub async fn signup(request: HttpRequest, user_info: Json<UserInfo>) -> impl Res
         }
         Ok(user) => {
             println!("user: {:?}", user);
+            // TODO: I will provide None instead of Some.
+
+            session.set("userinfo", user.clone());
             Json(Some(user)).with_status(StatusCode::OK)
-            // TODO: Note: Now I am returning the `password` also. But later I will not return password
         }
     }
+
     // TODO: I will return better error messages later.
 }
 
@@ -374,7 +396,10 @@ pub async fn show_join_requests(room_info: Json<RoomID>) -> HttpResponse {
 // ************************************************************************* //
 // ########################### Valid a user ################################ //
 // ************************************************************************* //
-pub async fn validate_user_account(user_info: Json<UsernameAndPassword>) -> impl Responder {
+pub async fn validate_user_account(
+    session: Session,
+    user_info: Json<UsernameAndPassword>,
+) -> impl Responder {
     println!(
         "{}",
         "A request has come for validate user's account"
@@ -388,9 +413,49 @@ pub async fn validate_user_account(user_info: Json<UsernameAndPassword>) -> impl
         &establish_connection(),
     ) {
         Ok(value) => match value {
-            Some(user) => Json(Some(user)).with_status(StatusCode::OK),
+            Some(user) => {
+                session.set(
+                    "userinfo",
+                    UserInfoForLogin {
+                        username: user.username.clone(),
+                        id: user.id,
+                    },
+                );
+                Json(Some(user)).with_status(StatusCode::OK)
+            }
             None => Json(None).with_status(StatusCode::UNAUTHORIZED), // TODO: I will figure out the best response for this situ
         },
         Err(_) => Json(None).with_status(StatusCode::INTERNAL_SERVER_ERROR),
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserInfoForLogin {
+    username: String,
+    id: i32,
+}
+
+pub async fn check_user_account(session: Session) -> impl Responder {
+    println!(
+        "{}",
+        "A request has come for checking if the user is logged in or not"
+            .blue()
+            .bold()
+    );
+
+    if let Some(user_info) = session.get::<UserInfoForLogin>("userinfo").unwrap() {
+        println!("The user is logged in!");
+        //TODO:  currently I am just using username for validating, later on I will using any jwt or something else with the username;
+        match check_user(user_info.username, &establish_connection()) {
+            Ok(value) => match value {
+                Some(user) => Json(Some(user)).with_status(StatusCode::OK),
+                None => Json(None).with_status(StatusCode::UNAUTHORIZED),
+            },
+            Err(_) => Json(None).with_status(StatusCode::INTERNAL_SERVER_ERROR),
+        }
+    } else {
+        // User is not logged in
+        println!("User's cookie not found");
+        Json(None).with_status(StatusCode::UNAUTHORIZED)
     }
 }
